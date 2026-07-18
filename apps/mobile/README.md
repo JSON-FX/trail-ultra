@@ -11,5 +11,8 @@ npx create-expo-app@latest . --template
 ```
 
 Then configure Metro for the monorepo (Expo's monorepo guide) and add the shared
-package: `@trail-ultra/shared`. Key deps to expect: `expo-router`, `expo-camera`
-(QR), `expo-secure-store`, `expo-sqlite` (offline tickets), `@supabase/supabase-js`.
+package: `@trail-ultra/shared`. Key deps to expect: `expo-router`,
+`expo-web-browser` (PayMongo checkout), `react-native-qrcode-svg` (ticket QR
+**display** — the runner app shows a QR, it does not scan), `expo-secure-store`,
+`react-native-mmkv` (offline ticket cache), `@tanstack/react-query`,
+`@supabase/supabase-js`. See [docs/01-mobile-ios-mvp.md](../../docs/01-mobile-ios-mvp.md).

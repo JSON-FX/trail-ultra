@@ -6,6 +6,7 @@ ultra-trail event platform (Mindanao, Philippines).
 | Doc | What it is |
 | --- | --- |
 | [00-product-overview.md](./00-product-overview.md) | **The PRD** — product overview, scope, MVP feature list (§4.3), multi-tenancy model, data model, payments/settlement, roles, roadmap, risks. |
+| [01-mobile-ios-mvp.md](./01-mobile-ios-mvp.md) | **iOS MVP spec** — the runner app: screens, navigation, data/offline, payment flow, custom fields, acceptance criteria. |
 | [trail-ultra-flows.html](./trail-ultra-flows.html) | **Visual companion** — MVP scope + the runner journey, multi-tenancy isolation, payments/settlement, and roles. Open in a browser. |
 | [adr/0001-cross-platform-tech-stack.md](./adr/0001-cross-platform-tech-stack.md) | **ADR-0001** — the cross-platform tech-stack decision (Expo/RN + Supabase + PayMongo + getdesign), with options & trade-offs. |
 | [adr/0002-repository-structure.md](./adr/0002-repository-structure.md) | **ADR-0002** — one monorepo; `apps/` · `packages/` · `supabase/` · `docs/` layout, with rationale. |
@@ -18,4 +19,5 @@ ultra-trail event platform (Mindanao, Philippines).
 - [x] Visual flows — `trail-ultra-flows.html`
 - [x] **Architecture / tech-stack decision** — [ADR-0001 · Cross-platform tech stack](./adr/0001-cross-platform-tech-stack.md)
 - [x] **Repository structure** — [ADR-0002 · Repository & monorepo structure](./adr/0002-repository-structure.md)
-- [ ] **01 · Mobile (iOS) MVP** — detailed spec for the first build → `docs/01-mobile-ios-mvp.md`
+- [x] **01 · Mobile (iOS) MVP** — [detailed spec](./01-mobile-ios-mvp.md) for the first build
+- [ ] **iOS MVP implementation plan** — via writing-plans, once the spec is approved
