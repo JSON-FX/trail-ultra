@@ -31,7 +31,7 @@ export default function Profile() {
   }
 
   async function switchOrg() { await clearOrg(); router.replace("/choose-org"); }
-  async function doSignOut() { await signOut(); router.replace("/(auth)/sign-in"); }
+  async function doSignOut() { await clearOrg(); await signOut(); router.replace("/(auth)/sign-in"); }
 
   return (
     <View style={styles.c}>

@@ -1,18 +1,19 @@
-# apps/mobile — Expo (React Native)
+# apps/mobile — Expo Router (React Native)
 
-The runner app for **iOS and Android**. TypeScript. See
-[ADR-0001](../../docs/adr/0001-cross-platform-tech-stack.md).
+The runner app for iOS and Android. TypeScript, Expo Router navigation. See [ADR-0001](../../docs/adr/0001-cross-platform-tech-stack.md).
 
-**Not scaffolded yet.** Initialize with:
+## Running
+
+Requires:
+- Local Supabase backend from Plan 1 (see `docs/01-mobile-ios-mvp.md`)
+- `apps/mobile/.env` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 
 ```bash
-cd apps/mobile
-npx create-expo-app@latest . --template
+cd apps/mobile && npx expo start
 ```
 
-Then configure Metro for the monorepo (Expo's monorepo guide) and add the shared
-package: `@trail-ultra/shared`. Key deps to expect: `expo-router`,
-`expo-web-browser` (PayMongo checkout), `react-native-qrcode-svg` (ticket QR
-**display** — the runner app shows a QR, it does not scan), `expo-secure-store`,
-`react-native-mmkv` (offline ticket cache), `@tanstack/react-query`,
-`@supabase/supabase-js`. See [docs/01-mobile-ios-mvp.md](../../docs/01-mobile-ios-mvp.md).
+## Testing
+
+```bash
+cd apps/mobile && pnpm test
+```
