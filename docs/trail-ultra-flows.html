@@ -1,0 +1,666 @@
+<title>trail-ultra — Product Flows</title>
+<style>
+  /* ---------- reset ---------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  h1, h2, h3, p, ol, ul, figure { margin: 0; }
+  ol, ul { padding: 0; list-style: none; }
+
+  /* ---------- tokens: light (default) ---------- */
+  :root {
+    --paper:#F2EEE4; --panel:#FBF8F0; --panel-2:#F5F0E4;
+    --ink:#1C2A22; --ink-soft:#5E6C62; --ink-faint:#8B978C;
+    --line:#E2DCCC; --line-strong:#CFC8B5;
+    --pine:#1F6248; --pine-soft:#2E7A5C;
+    --blaze:#DD662A; --blaze-soft:#E9884F;
+    --trail:#C7BDA4;
+    --ok:#2E8B57; --wait:#B9821A; --stop:#BF492C;
+    --ring:rgba(31,98,72,.13);
+    --shadow:0 1px 2px rgba(28,42,34,.05), 0 8px 24px -14px rgba(28,42,34,.22);
+    --ridge:#1F6248;
+
+    --font-display: ui-serif, "New York", Georgia, "Times New Roman", serif;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0F1D18; --panel:#15251E; --panel-2:#1A2C23;
+      --ink:#EAEEE6; --ink-soft:#9DABA0; --ink-faint:#6E7E73;
+      --line:#26382E; --line-strong:#324a3d;
+      --pine:#57B393; --pine-soft:#469A7C;
+      --blaze:#F0813F; --blaze-soft:#F59D66;
+      --trail:#3A4E43;
+      --ok:#4FBE86; --wait:#E6B34C; --stop:#E27455;
+      --ring:rgba(87,179,147,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -16px rgba(0,0,0,.6);
+      --ridge:#57B393;
+    }
+  }
+  /* explicit theme overrides win in both directions */
+  :root[data-theme="light"] {
+    --paper:#F2EEE4; --panel:#FBF8F0; --panel-2:#F5F0E4;
+    --ink:#1C2A22; --ink-soft:#5E6C62; --ink-faint:#8B978C;
+    --line:#E2DCCC; --line-strong:#CFC8B5;
+    --pine:#1F6248; --pine-soft:#2E7A5C;
+    --blaze:#DD662A; --blaze-soft:#E9884F;
+    --trail:#C7BDA4;
+    --ok:#2E8B57; --wait:#B9821A; --stop:#BF492C;
+    --ring:rgba(31,98,72,.13);
+    --shadow:0 1px 2px rgba(28,42,34,.05), 0 8px 24px -14px rgba(28,42,34,.22);
+    --ridge:#1F6248;
+  }
+  :root[data-theme="dark"] {
+    --paper:#0F1D18; --panel:#15251E; --panel-2:#1A2C23;
+    --ink:#EAEEE6; --ink-soft:#9DABA0; --ink-faint:#6E7E73;
+    --line:#26382E; --line-strong:#324a3d;
+    --pine:#57B393; --pine-soft:#469A7C;
+    --blaze:#F0813F; --blaze-soft:#F59D66;
+    --trail:#3A4E43;
+    --ok:#4FBE86; --wait:#E6B34C; --stop:#E27455;
+    --ring:rgba(87,179,147,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px -16px rgba(0,0,0,.6);
+    --ridge:#57B393;
+  }
+
+  /* ---------- base ---------- */
+  body {
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(1080px, 92vw); margin-inline: auto; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--pine); font-weight: 600;
+  }
+  h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em;
+       font-size: clamp(1.5rem, 3.4vw, 2rem); line-height: 1.15; text-wrap: balance; }
+  h3 { font-size: 1.06rem; font-weight: 650; letter-spacing: -.005em; }
+  .lede { color: var(--ink-soft); max-width: 62ch; font-size: 1.02rem; }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: .4em;
+    font-family: var(--font-mono); font-size: .7rem; letter-spacing: .02em;
+    padding: .22em .55em; border-radius: 6px;
+    background: var(--panel-2); color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+
+  /* ---------- hero ---------- */
+  header.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .hero-inner { padding-block: clamp(3rem, 7vw, 5rem) clamp(4.5rem, 9vw, 7rem); position: relative; z-index: 1; }
+  .brand { display: flex; align-items: baseline; gap: .1em; }
+  h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(2.6rem, 8vw, 4.2rem); line-height: .98; letter-spacing: -.03em;
+  }
+  h1 .ultra { color: var(--blaze); }
+  .hero .lede { margin-top: 1.1rem; font-size: clamp(1.02rem, 1.6vw, 1.18rem); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.6rem; }
+
+  .ridge { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: clamp(90px,14vw,150px);
+           z-index: 0; pointer-events: none; }
+  .ridge svg { width: 100%; height: 100%; display: block; }
+  .ridge .fill { fill: var(--ridge); opacity: .07; }
+  .ridge .fill.back { opacity: .045; }
+  .ridge .stroke { fill: none; stroke: var(--ridge); stroke-width: 1.5; opacity: .28; }
+
+  /* ---------- section frame ---------- */
+  section { padding-block: clamp(2.8rem, 6vw, 4.5rem); border-bottom: 1px solid var(--line); }
+  .sec-head { margin-bottom: 2rem; }
+  .sec-head .eyebrow { display: block; margin-bottom: .5rem; }
+  .sec-head .lede { margin-top: .6rem; }
+
+  /* ---------- legend ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; margin-top: 1.4rem;
+            font-size: .82rem; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: .5em; }
+  .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--pine); background: var(--panel); flex: none; }
+  .dot.wait { border-color: var(--wait); box-shadow: 0 0 0 3px var(--ring); }
+  .dot.offline { border-style: dashed; border-color: var(--pine-soft); }
+  .dot.race { border-color: var(--blaze); background: var(--blaze); }
+
+  /* ---------- runner journey timeline ---------- */
+  .timeline { position: relative; margin-top: .5rem; }
+  .step { position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 1.15rem;
+          padding-bottom: 1.5rem; }
+  .step:last-child { padding-bottom: 0; }
+  .step:not(:last-child)::before {
+    content: ""; position: absolute; left: 21px; top: 46px; bottom: -2px;
+    border-left: 2px dashed var(--trail);
+  }
+  .marker {
+    position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--panel);
+    border: 2px solid var(--pine); color: var(--pine);
+    font-family: var(--font-mono); font-size: .92rem; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .marker.wait { border-color: var(--wait); color: var(--wait); box-shadow: 0 0 0 4px var(--ring); }
+  .marker.offline { border-style: dashed; }
+  .marker.race { border-color: var(--blaze); color: #fff; background: var(--blaze); }
+
+  .step-body {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 1rem 1.15rem; box-shadow: var(--shadow);
+    transition: transform .18s ease, border-color .18s ease;
+  }
+  .step-body:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+  .step-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .75rem; }
+  .step-top h3 { letter-spacing: -.01em; }
+  .actor {
+    font-family: var(--font-mono); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); border: 1px solid var(--line); border-radius: 5px; padding: .12em .45em;
+  }
+  .actor.runner { color: var(--pine); border-color: color-mix(in srgb, var(--pine) 35%, var(--line)); }
+  .actor.system { color: var(--blaze); border-color: color-mix(in srgb, var(--blaze) 32%, var(--line)); }
+  .actor.marshal { color: var(--ink); background: var(--panel-2); }
+  .step-body p { margin-top: .35rem; color: var(--ink-soft); font-size: .95rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+  .band { grid-column: 2; margin: .2rem 0 1rem; font-family: var(--font-mono); font-size: .68rem;
+          letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- tenancy ---------- */
+  .tenancy { display: grid; gap: 1.1rem; }
+  .identity-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1.1rem;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.15rem;
+    box-shadow: var(--shadow);
+  }
+  .identity-bar .who { font-weight: 650; }
+  .identity-bar .sub { color: var(--ink-soft); font-size: .92rem; }
+  .arrow-down { display: grid; place-items: center; color: var(--ink-faint); font-size: 1.2rem; line-height: 1; }
+  .silos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .silo {
+    background: var(--panel); border: 1.5px solid var(--line-strong); border-radius: 14px;
+    padding: 1rem 1.1rem; position: relative; box-shadow: var(--shadow);
+  }
+  .silo::after {
+    content: "RLS · sealed"; position: absolute; top: .8rem; right: .8rem;
+    font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--pine); border: 1px solid color-mix(in srgb, var(--pine) 30%, var(--line));
+    border-radius: 5px; padding: .15em .4em; background: var(--panel);
+  }
+  .silo h3 { padding-right: 5.5rem; }
+  .silo .oid { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-faint); margin-top: .15rem; }
+  .silo ul { margin-top: .7rem; display: grid; gap: .3rem; }
+  .silo li { font-size: .86rem; color: var(--ink-soft); display: flex; align-items: center; gap: .5em; }
+  .silo li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--pine-soft); flex: none; }
+  .scope-note { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .3rem; }
+  .scope-chip {
+    font-size: .8rem; color: var(--ink-soft); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 8px; padding: .4rem .7rem;
+  }
+  .scope-chip b { color: var(--ink); font-weight: 650; }
+
+  /* ---------- money flow ---------- */
+  .money { display: flex; flex-wrap: wrap; align-items: stretch; gap: .7rem; }
+  .mnode {
+    flex: 1 1 150px; min-width: 150px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: .85rem .95rem; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: .25rem;
+  }
+  .mnode .k { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .mnode .v { font-weight: 650; font-size: .96rem; }
+  .mnode .d { font-size: .82rem; color: var(--ink-soft); }
+  .mnode.split { border-color: var(--line-strong); }
+  .receipt { display: grid; gap: .35rem; margin-top: .2rem; }
+  .receipt .row { display: flex; justify-content: space-between; gap: 1rem; font-size: .84rem; }
+  .receipt .fee { color: var(--stop); }
+  .receipt .net { color: var(--ok); font-weight: 650; }
+  .receipt .bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: var(--panel-2); margin-top: .1rem; }
+  .receipt .bar .s-fee { background: var(--stop); }
+  .receipt .bar .s-net { background: var(--ok); }
+  .mconn { align-self: center; color: var(--ink-faint); font-size: 1.1rem; flex: none; }
+  .flag {
+    margin-top: 1.2rem; display: flex; gap: .6rem; align-items: flex-start;
+    background: color-mix(in srgb, var(--wait) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--wait) 30%, var(--line));
+    border-radius: 12px; padding: .8rem 1rem; font-size: .88rem; color: var(--ink-soft);
+  }
+  .flag b { color: var(--ink); }
+  .flag .mk { color: var(--wait); font-weight: 700; flex: none; }
+
+  /* ---------- roles table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; min-width: 620px; background: var(--panel); }
+  thead th {
+    text-align: left; font-family: var(--font-mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; padding: .85rem 1rem; border-bottom: 1px solid var(--line-strong);
+  }
+  tbody td { padding: .85rem 1rem; border-bottom: 1px solid var(--line); vertical-align: top; font-size: .92rem; color: var(--ink-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  td .role { font-family: var(--font-mono); font-weight: 650; color: var(--ink); }
+  .pill { display: inline-block; font-size: .72rem; font-weight: 600; padding: .2em .6em; border-radius: 999px; white-space: nowrap; }
+  .pill.global { color: var(--pine); background: color-mix(in srgb, var(--pine) 13%, var(--panel)); border: 1px solid color-mix(in srgb, var(--pine) 30%, var(--line)); }
+  .pill.org { color: var(--blaze); background: color-mix(in srgb, var(--blaze) 12%, var(--panel)); border: 1px solid color-mix(in srgb, var(--blaze) 30%, var(--line)); }
+  .pill.platform { color: var(--ink); background: var(--panel-2); border: 1px solid var(--line-strong); }
+
+  /* ---------- footer ---------- */
+  footer { padding-block: 2.2rem 3rem; color: var(--ink-faint); font-size: .84rem; }
+  footer .fnote { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; }
+  footer code { font-family: var(--font-mono); color: var(--ink-soft); }
+  footer .open { margin-top: .8rem; color: var(--ink-soft); }
+  footer .open b { color: var(--wait); }
+
+  /* ---------- mvp scope ---------- */
+  .mvp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; align-items: start; }
+  .surface {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 1.35rem 1.4rem; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: .3rem;
+  }
+  .surface-head { display: flex; align-items: flex-start; gap: .9rem; margin-bottom: .9rem; }
+  .surface-ico {
+    flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--pine) 12%, var(--panel));
+    border: 1px solid color-mix(in srgb, var(--pine) 28%, var(--line)); color: var(--pine);
+  }
+  .surface-ico svg { width: 22px; height: 22px; }
+  .surface-head .st { flex: 1; min-width: 0; }
+  .surface-head .st .eyebrow { display: block; }
+  .surface-head h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; margin-top: .2rem; letter-spacing: -.01em; }
+  .surface-head .sub { color: var(--ink-soft); font-size: .82rem; margin-top: .15rem; }
+  .count { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-faint);
+    border: 1px solid var(--line); border-radius: 999px; padding: .25em .6em; white-space: nowrap; flex: none; }
+  .feat-list { display: grid; gap: .55rem; }
+  .feat { display: grid; grid-template-columns: 18px 1fr; gap: .55rem; align-items: start; font-size: .92rem; line-height: 1.45; }
+  .feat .ck { color: var(--pine); font-weight: 700; }
+  .feat b { font-weight: 600; color: var(--ink); }
+  .feat .desc { color: var(--ink-soft); }
+  .role-label {
+    font-family: var(--font-mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); display: flex; align-items: center; gap: .6rem; margin: .9rem 0 .55rem;
+  }
+  .role-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .deferred {
+    margin-top: 1.4rem; border: 1px dashed var(--line-strong); border-radius: 14px;
+    padding: 1rem 1.15rem; color: var(--ink-soft); font-size: .9rem; display: flex; gap: .85rem; align-items: flex-start;
+  }
+  .deferred .lbl {
+    font-family: var(--font-mono); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); border: 1px solid var(--line-strong); border-radius: 5px; padding: .25em .55em; flex: none;
+  }
+  .deferred b { color: var(--ink); }
+  @media (max-width: 780px) { .mvp-grid { grid-template-columns: 1fr; } }
+
+  @media (max-width: 560px) {
+    .step { grid-template-columns: 38px 1fr; gap: .85rem; }
+    .step:not(:last-child)::before { left: 18px; top: 42px; }
+    .marker { width: 38px; height: 38px; font-size: .82rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow">Product flows · Draft v0.4 · 2026-07-19</span>
+    <div class="brand" style="margin-top:.8rem">
+      <h1>trail<span class="ultra">·</span>ultra</h1>
+    </div>
+    <p class="lede">A multi-organization platform for trail &amp; ultra events in the mountains of
+      Mindanao. <b>One runner account, many organizations</b> — each with its own events, money, and
+      forms, sealed off from every other.</p>
+    <div class="meta-row">
+      <span class="tag">iOS-first · Expo</span>
+      <span class="tag">Supabase · RLS</span>
+      <span class="tag">PayMongo</span>
+      <span class="tag">getdesign · apple</span>
+    </div>
+  </div>
+  <div class="ridge" aria-hidden="true">
+    <svg viewBox="0 0 1200 160" preserveAspectRatio="none">
+      <path class="fill back" d="M0,150 L0,96 L120,70 L230,104 L330,58 L450,86 L560,40 L680,92 L800,52 L930,104 L1040,66 L1200,98 L1200,160 L0,160 Z"/>
+      <path class="fill" d="M0,150 L0,120 L100,92 L190,112 L280,62 L370,88 L470,44 L560,80 L650,54 L760,102 L860,66 L980,110 L1080,80 L1200,112 L1200,160 L0,160 Z"/>
+      <path class="stroke" d="M0,120 L100,92 L190,112 L280,62 L370,88 L470,44 L560,80 L650,54 L760,102 L860,66 L980,110 L1080,80 L1200,112"/>
+    </svg>
+  </div>
+</header>
+
+<main>
+  <!-- ============ MVP SCOPE ============ -->
+  <section id="mvp">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">MVP scope · what ships first</span>
+        <h2>The MVP is two surfaces</h2>
+        <p class="lede">The runner's <b>mobile app</b> and the <b>admin web</b> ship first — together they can run a
+          real event end to end. The public e-commerce storefront is parked for later.</p>
+      </div>
+
+      <div class="mvp-grid">
+        <!-- MOBILE -->
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="2.5" width="12" height="19" rx="2.5"/><line x1="10.5" y1="18.6" x2="13.5" y2="18.6"/>
+              </svg>
+            </div>
+            <div class="st">
+              <span class="eyebrow">Mobile · Runner</span>
+              <h3>The runner app</h3>
+              <div class="sub">iOS first, Android parity · Expo · getdesign apple</div>
+            </div>
+            <span class="count">8 features</span>
+          </div>
+          <div class="feat-list">
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>One global account</b> <span class="desc">— email (verified), Apple, Google, Facebook</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Choose &amp; switch organization</b> <span class="desc">— org-first, branded per org</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Browse &amp; search events</b> <span class="desc">— scoped to the chosen org</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Event detail + category</b> <span class="desc">— 100k / 50k / 21k / 10k, live slots</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Register</b> <span class="desc">— core + org custom fields + waiver + add-ons</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Pay</b> <span class="desc">— Card / GCash / Maya, webhook-confirmed</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Digital QR ticket</b> <span class="desc">— renders fully offline</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>My races &amp; profile</b> <span class="desc">— current org; profile is global</span></div></div>
+          </div>
+        </div>
+
+        <!-- ADMIN WEB -->
+        <div class="surface">
+          <div class="surface-head">
+            <div class="surface-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2.5" y="4" width="19" height="16" rx="2.5"/><line x1="2.5" y1="9" x2="21.5" y2="9"/>
+                <circle cx="5.6" cy="6.5" r=".55" fill="currentColor" stroke="none"/><circle cx="7.7" cy="6.5" r=".55" fill="currentColor" stroke="none"/>
+              </svg>
+            </div>
+            <div class="st">
+              <span class="eyebrow">Admin web · Staff</span>
+              <h3>The admin console</h3>
+              <div class="sub">Race directors, marshals &amp; platform operator · React + Vite</div>
+            </div>
+            <span class="count">9 features</span>
+          </div>
+          <div class="feat-list">
+            <div class="role-label">Event content · editor +</div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Create &amp; edit events</b> <span class="desc">— categories &amp; add-ons</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Define custom registration fields</b> <span class="desc">— typed, validated form fields</span></div></div>
+
+            <div class="role-label">Operations · admin</div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Registrations table + filters</b></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Payment status + refunds</b> <span class="desc">— admin-initiated</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Race-day check-in</b> <span class="desc">— QR scan (marshal), offline-capable</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Dashboard KPIs</b> <span class="desc">— fill rate, revenue, sign-ups over time</span></div></div>
+
+            <div class="role-label">Platform · super_admin</div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Provision organizations</b> <span class="desc">— org + first admin</span></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Set per-org commission</b></div></div>
+            <div class="feat"><span class="ck" aria-hidden="true">✓</span><div><b>Payout statements</b> <span class="desc">— settlement, mark-as-paid</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="deferred">
+        <span class="lbl">Later</span>
+        <span><b>E-commerce client web</b> — the public storefront at <code style="font-family:var(--font-mono)">/o/&lt;slug&gt;</code>
+          where runners register on desktop — is deferred, along with self-serve org onboarding, cross-org discovery,
+          vanity subdomains, and automated disbursement.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUNNER JOURNEY ============ -->
+  <section id="journey">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Flow 01</span>
+        <h2>The runner journey — org-first</h2>
+        <p class="lede">From install to start line, a runner is always <b>inside one organization</b>.
+          The one thing the app never does is trust a payment redirect — it waits for PayMongo's webhook.</p>
+        <div class="legend" aria-hidden="true">
+          <span><i class="dot"></i> Step</span>
+          <span><i class="dot wait"></i> Waiting on webhook</span>
+          <span><i class="dot offline"></i> Works offline</span>
+          <span><i class="dot race"></i> Race day</span>
+        </div>
+      </div>
+
+      <ol class="timeline">
+        <li class="step">
+          <div class="marker">01</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Sign in</h3><span class="actor runner">Runner</span></div>
+            <p>One global account — email (verified), Apple, Google, or Facebook. The same login works with every organization.</p>
+            <div class="tags"><span class="tag">Supabase Auth</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker">02</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Choose an organization</h3><span class="actor runner">Runner</span></div>
+            <p>Pick an org from the switcher. The app themes to its brand and shows only its world — this is the moment everything becomes org-scoped.</p>
+            <div class="tags"><span class="tag">org switcher</span><span class="tag">per-org theming</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker">03</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Browse events</h3><span class="actor runner">Runner</span></div>
+            <p>Search and scroll only this org's events — status, distance, elevation gain, cutoff.</p>
+            <div class="tags"><span class="tag">events</span><span class="tag">RLS · org_id</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker">04</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Pick a category</h3><span class="actor runner">Runner</span></div>
+            <p>Open an event and choose a distance — 100k / 50k / 21k / 10k — with live remaining slots.</p>
+            <div class="tags"><span class="tag">categories</span><span class="tag">slots_taken</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker">05</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Register</h3><span class="actor runner">Runner</span></div>
+            <p>Core details + <b>this org's custom fields</b> (blood type, club, PhilID…) + waiver + add-ons. Every field is validated server-side before the registration exists.</p>
+            <div class="tags"><span class="tag">form_fields</span><span class="tag">custom_data · JSONB</span><span class="tag">waiver</span></div>
+          </div>
+        </li>
+        <li class="band">— handoff to payments —</li>
+        <li class="step">
+          <div class="marker">06</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Pay</h3><span class="actor runner">Runner</span><span class="actor system">Edge · PayMongo</span></div>
+            <p>An Edge Function creates the intent for the total; the app opens Card / GCash / Maya and returns to a pending state.</p>
+            <div class="tags"><span class="tag">payment intent</span><span class="tag">idempotent · registration_id</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker wait">06½</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Waiting for confirmation</h3><span class="actor system">Async</span></div>
+            <p>The client never trusts the redirect. The slot is <b>soft-held with a TTL</b> while it waits for PayMongo's signed webhook.</p>
+            <div class="tags"><span class="tag">webhook</span><span class="tag">soft-hold TTL</span><span class="tag">poll fallback</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker">07</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Confirmed</h3><span class="actor system">Realtime</span></div>
+            <p>Webhook verified → registration marked <b>paid</b>, slot booked, and commission + net-to-org computed. Realtime pushes the runner straight to the Confirmed screen.</p>
+            <div class="tags"><span class="tag">payments.paid</span><span class="tag">platform_fee</span><span class="tag">net_to_org</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker offline">08</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Digital ticket</h3><span class="actor runner">Runner</span><span class="actor">Offline</span></div>
+            <p>A <b>signed QR</b> ticket lands in the pocket and renders fully offline — ready for a 4&nbsp;AM mountain flag-off with no signal.</p>
+            <div class="tags"><span class="tag">signed token</span><span class="tag">offline-first</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="marker race">▲</div>
+          <div class="step-body">
+            <div class="step-top"><h3>Race-day check-in</h3><span class="actor marshal">Marshal</span><span class="actor">Offline</span></div>
+            <p>A marshal scans the QR at the start line. It's verified offline against a cached event key and syncs when back online.</p>
+            <div class="tags"><span class="tag">marshal scope</span><span class="tag">offline verify</span><span class="tag">checkins</span></div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ MULTI-TENANCY ============ -->
+  <section id="tenancy">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Flow 02</span>
+        <h2>One identity, many sealed organizations</h2>
+        <p class="lede">Every org's data lives in the <b>same database</b> but is discriminated by <code style="font-family:var(--font-mono)">org_id</code>
+          and sealed by row-level security. Same schema, different data — no org can read another's.</p>
+      </div>
+
+      <div class="tenancy">
+        <div class="identity-bar">
+          <div>
+            <div class="who">JR · one runner account</div>
+            <div class="sub">Global <code style="font-family:var(--font-mono);font-size:.85em">profiles</code> row — his orgs &amp; “events attended” are derived from his registrations.</div>
+          </div>
+          <span class="tag" style="margin-left:auto">picks an org ↓</span>
+        </div>
+        <div class="arrow-down" aria-hidden="true">↓</div>
+        <div class="silos">
+          <div class="silo">
+            <h3>Run With Point</h3>
+            <div class="oid">org_id · 8f2a…</div>
+            <ul><li>events</li><li>registrations</li><li>payments</li><li>check-ins</li><li>custom form fields</li></ul>
+          </div>
+          <div class="silo">
+            <h3>Bukidnon Trails</h3>
+            <div class="oid">org_id · 3c07…</div>
+            <ul><li>events</li><li>registrations</li><li>payments</li><li>check-ins</li><li>custom form fields</li></ul>
+          </div>
+          <div class="silo">
+            <h3>Cotabato Skyrace</h3>
+            <div class="oid">org_id · b591…</div>
+            <ul><li>events</li><li>registrations</li><li>payments</li><li>check-ins</li><li>custom form fields</li></ul>
+          </div>
+        </div>
+        <div class="scope-note">
+          <span class="scope-chip"><b>super_admin</b> — platform scope, sees across every silo above</span>
+          <span class="scope-chip"><b>admin / editor / marshal</b> — bound to one silo, can't step outside it</span>
+          <span class="scope-chip"><b>tenancy test suite</b> — every cross-org read/write asserted denied</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MONEY ============ -->
+  <section id="money">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Flow 03</span>
+        <h2>Collect once, settle to each org</h2>
+        <p class="lede">Payments are collected centrally through <b>one platform PayMongo account</b>, then settled back
+          to each organization — minus a per-org commission.</p>
+      </div>
+
+      <div class="money">
+        <div class="mnode">
+          <span class="k">Runner pays</span>
+          <span class="v">₱ total</span>
+          <span class="d">Card · GCash · Maya</span>
+        </div>
+        <span class="mconn" aria-hidden="true">→</span>
+        <div class="mnode">
+          <span class="k">Platform PayMongo</span>
+          <span class="v">Collects</span>
+          <span class="d">Single merchant of record</span>
+        </div>
+        <span class="mconn" aria-hidden="true">→</span>
+        <div class="mnode split">
+          <span class="k">Edge Function splits</span>
+          <div class="receipt">
+            <div class="row fee"><span>− Platform fee</span><span>commission&nbsp;%</span></div>
+            <div class="row net"><span>+ Net to org</span><span>remainder</span></div>
+            <div class="bar" aria-hidden="true"><span class="s-fee" style="width:18%"></span><span class="s-net" style="width:82%"></span></div>
+          </div>
+        </div>
+        <span class="mconn" aria-hidden="true">→</span>
+        <div class="mnode">
+          <span class="k">Org statement</span>
+          <span class="v">Net owed</span>
+          <span class="d">payout_statements · accrues net_to_org − refunds</span>
+        </div>
+        <span class="mconn" aria-hidden="true">→</span>
+        <div class="mnode">
+          <span class="k">super_admin</span>
+          <span class="v">Marks paid</span>
+          <span class="d">Off-platform bank transfer · MVP</span>
+        </div>
+      </div>
+
+      <div class="flag">
+        <span class="mk" aria-hidden="true">⚑</span>
+        <span><b>Two open questions carried from the PRD:</b> which party absorbs the platform fee on a refund, and
+          the legal review for a platform holding funds (PH money-transmitter / BSP). Automated disbursement is post-MVP.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROLES ============ -->
+  <section id="roles">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Flow 04</span>
+        <h2>Who can do what</h2>
+        <p class="lede">One runner role is global; staff roles are bound to a single organization; only the platform operator sees across all of them.</p>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Role</th><th>Scope</th><th>What they touch</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="role">user</span><div style="color:var(--ink-faint);font-size:.8rem">the runner</div></td>
+              <td><span class="pill global">Global</span></td>
+              <td>Browse, register, pay, carry a ticket — reads/writes <b>only their own</b> data.</td>
+            </tr>
+            <tr>
+              <td><span class="role">marshal</span></td>
+              <td><span class="pill org">Org · often 1 event</span></td>
+              <td>Scan &amp; check in; look up an entry. Nothing editable, nothing financial.</td>
+            </tr>
+            <tr>
+              <td><span class="role">editor</span></td>
+              <td><span class="pill org">Org</span></td>
+              <td>Create &amp; manage events, categories, add-ons, and custom fields; view registrations.</td>
+            </tr>
+            <tr>
+              <td><span class="role">admin</span></td>
+              <td><span class="pill org">Org</span></td>
+              <td>Everything editor does + registrations, refunds, check-in, and the org's settlement statements.</td>
+            </tr>
+            <tr>
+              <td><span class="role">super_admin</span><div style="color:var(--ink-faint);font-size:.8rem">platform operator</div></td>
+              <td><span class="pill platform">Platform · all orgs</span></td>
+              <td>Provision organizations, set commission, run payouts, manage roles, own global settings.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fnote">
+      <span>Mirrors <code>00-product-overview.md</code></span>
+      <span>·</span>
+      <span>Draft v0.4 — 2026-07-19</span>
+      <span>·</span>
+      <span>Mindanao, PH · ₱ PHP</span>
+    </div>
+    <p class="open">Not shown here (post-MVP): self-serve org onboarding, cross-org discovery feed, vanity subdomains, automated disbursement.</p>
+  </div>
+</footer>
