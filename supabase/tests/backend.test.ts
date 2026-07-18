@@ -38,3 +38,36 @@ describe("events catalog RLS", () => {
     await svc.from("organizations").delete().eq("id", org.data!.id);
   });
 });
+
+async function makeUser(email: string) {
+  const svc = service();
+  const created = await svc.auth.admin.createUser({ email, password: "password123", email_confirm: true });
+  const signedIn = await anon().auth.signInWithPassword({ email, password: "password123" });
+  return { id: created.data.user!.id, token: signedIn.data.session!.access_token };
+}
+
+describe("registrations RLS", () => {
+  it("a user reads only their own registration", async () => {
+    const svc = service();
+    const org = await svc.from("organizations").insert({ name: "Reg Org", slug: "reg-org" }).select().single();
+    const ev = await svc.from("events").insert({ org_id: org.data!.id, name: "Reg Race", status: "open" }).select().single();
+    const cat = await svc.from("categories").insert({ org_id: org.data!.id, event_id: ev.data!.id, code: "10k", label: "10K", base_price: 100000, slots_total: 10 }).select().single();
+
+    const alice = await makeUser(`alice_${Date.now()}@test.dev`);
+    const bob = await makeUser(`bob_${Date.now()}@test.dev`);
+    const reg = await svc.from("registrations").insert({ org_id: org.data!.id, event_id: ev.data!.id, category_id: cat.data!.id, user_id: alice.id, total_amount: 100000 }).select().single();
+
+    const asAlice = createClient(url, anonKey, { global: { headers: { Authorization: `Bearer ${alice.token}` } }, auth: { persistSession: false } });
+    const asBob = createClient(url, anonKey, { global: { headers: { Authorization: `Bearer ${bob.token}` } }, auth: { persistSession: false } });
+
+    const aliceView = await asAlice.from("registrations").select("id").eq("id", reg.data!.id);
+    const bobView = await asBob.from("registrations").select("id").eq("id", reg.data!.id);
+    expect(aliceView.data).toHaveLength(1);
+    expect(bobView.data).toHaveLength(0); // RLS hides Alice's row from Bob
+
+    await svc.from("registrations").delete().eq("id", reg.data!.id);
+    await svc.auth.admin.deleteUser(alice.id);
+    await svc.auth.admin.deleteUser(bob.id);
+    await svc.from("organizations").delete().eq("id", org.data!.id);
+  });
+});
