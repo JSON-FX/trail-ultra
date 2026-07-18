@@ -130,3 +130,46 @@ describe("registrations-checkout", () => {
     await service().auth.admin.deleteUser(user.id);
   });
 });
+
+describe("payment confirmation (fake) e2e", () => {
+  it("checkout -> webhook -> paid + ticket + slot incremented", async () => {
+    const svc = service();
+    const user = await makeUser(`e2e_${Date.now()}@test.dev`);
+
+    const before = await svc.from("categories").select("slots_taken").eq("id", "00000000-0000-0000-0000-0000000000c4").single();
+
+    const checkout = await fetch(`${FN}/registrations-checkout`, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({
+        event_id: "00000000-0000-0000-0000-0000000000e1",
+        category_id: "00000000-0000-0000-0000-0000000000c4",
+        custom_data: { blood_type: "A", shirt_size: "L" },
+        waiver_accepted: true,
+        idempotency_key: `idem-e2e-${Date.now()}`,
+      }),
+    }).then((r) => r.json());
+
+    const hook = await fetch(`${FN}/payments-webhook`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ registration_id: checkout.registration_id, method: "gcash" }),
+    });
+    expect(hook.status).toBe(200);
+
+    const reg = await svc.from("registrations").select("status,ticket_token").eq("id", checkout.registration_id).single();
+    expect(reg.data?.status).toBe("paid");
+    expect(reg.data?.ticket_token).toContain("."); // body.signature
+
+    const pay = await svc.from("payments").select("status,platform_fee,net_to_org").eq("registration_id", checkout.registration_id).single();
+    expect(pay.data?.status).toBe("paid");
+    expect(pay.data?.platform_fee).toBe(Math.round(100000 * 0.10)); // 10K base, 10% commission
+    expect(pay.data?.net_to_org).toBe(100000 - Math.round(100000 * 0.10));
+
+    const after = await svc.from("categories").select("slots_taken").eq("id", "00000000-0000-0000-0000-0000000000c4").single();
+    expect(after.data!.slots_taken).toBe(before.data!.slots_taken + 1); // relative — robust to prior runs
+
+    await svc.from("registrations").delete().eq("id", checkout.registration_id);
+    await svc.auth.admin.deleteUser(user.id);
+  });
+});
