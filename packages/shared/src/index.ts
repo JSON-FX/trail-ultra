@@ -49,3 +49,26 @@ export function customDataSchema(fields: FormField[]) {
   }
   return z.object(shape);
 }
+
+/** Full registration payload sent to the checkout Edge Function. */
+export const registrationInputSchema = z.object({
+  event_id: z.string().uuid(),
+  category_id: z.string().uuid(),
+  addon_ids: z.array(z.string().uuid()).default([]),
+  custom_data: z.record(z.unknown()).default({}),
+  waiver_accepted: z.boolean(),
+  idempotency_key: z.string().min(8),
+});
+export type RegistrationInput = z.infer<typeof registrationInputSchema>;
+
+/** Format integer centavos as PH pesos, e.g. 150000 -> "₱1,500.00". */
+export function formatPeso(centavos: number): string {
+  return "₱" + (centavos / 100).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/** Signed-ticket payload (minted server-side on payment). */
+export interface TicketPayload {
+  rid: string; // registration id
+  eid: string; // event id
+  iat: number; // issued-at (unix seconds)
+}
