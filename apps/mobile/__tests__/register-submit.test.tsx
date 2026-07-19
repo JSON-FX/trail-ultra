@@ -24,6 +24,9 @@ describe("Register submit", () => {
     await waitFor(() => expect(mockStartCheckout).toHaveBeenCalled());
     const arg = mockStartCheckout.mock.calls[0][0];
     expect(arg).toMatchObject({ event_id: "e1", category_id: "c3", custom_data: { blood_type: "O" }, waiver_accepted: true });
-    expect(mockReplace).toHaveBeenCalledWith({ pathname: "/registration-created", params: { rid: "r1" } });
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/pay/[registrationId]",
+      params: { registrationId: "r1", checkoutUrl: "http://x/dev/pay/r1" },
+    });
   });
 });

@@ -49,7 +49,10 @@ export default function Register() {
         waiver_accepted: true,
         idempotency_key: idempotencyKey,
       });
-      router.replace({ pathname: "/registration-created", params: { rid: res.registration_id } });
+      router.replace({
+        pathname: "/pay/[registrationId]",
+        params: { registrationId: res.registration_id, checkoutUrl: res.checkout_url },
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");
     } finally {
