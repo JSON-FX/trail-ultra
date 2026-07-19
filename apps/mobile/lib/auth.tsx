@@ -34,7 +34,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signUp({ email, password });
     return error ? { error: error.message } : {};
   };
-  const signOut = async () => { await clearTicketCache(); await supabase.auth.signOut(); };
+  const signOut = async () => {
+    try { await clearTicketCache(); } catch { /* cache-clear failure must not block sign-out */ }
+    await supabase.auth.signOut();
+  };
 
   return (
     <AuthContext.Provider value={{ session, loading, signIn, signUp, signOut }}>
