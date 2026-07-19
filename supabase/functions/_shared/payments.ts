@@ -5,13 +5,13 @@ export interface PaymentProvider {
   createCheckout(input: CheckoutInput): Promise<CheckoutResult>;
 }
 
-/** Dev/local provider — no real PayMongo. Returns a fake checkout URL. */
+/** Dev/local provider — no real PayMongo. Serves a hosted sandbox checkout page. */
 export class FakePaymentProvider implements PaymentProvider {
   readonly name = "fake";
-  constructor(private appUrl: string) {}
+  constructor(private functionsUrl: string) {}
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
     return {
-      checkoutUrl: `${this.appUrl}/dev/pay/${input.registrationId}`,
+      checkoutUrl: `${this.functionsUrl}/fake-checkout?rid=${input.registrationId}`,
       providerRef: `fake_${input.registrationId}`,
     };
   }
@@ -19,5 +19,6 @@ export class FakePaymentProvider implements PaymentProvider {
 
 // Swap point when PayMongo is ready: return a PayMongoProvider when PAYMONGO_SECRET is set.
 export function getPaymentProvider(): PaymentProvider {
-  return new FakePaymentProvider(Deno.env.get("PUBLIC_APP_URL") ?? "http://127.0.0.1:8081");
+  const base = Deno.env.get("PUBLIC_FUNCTIONS_URL") ?? "http://127.0.0.1:54521/functions/v1";
+  return new FakePaymentProvider(base);
 }

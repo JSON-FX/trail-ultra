@@ -102,7 +102,7 @@ describe("registrations-checkout", () => {
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.registration_id).toBeTruthy();
-    expect(body.checkout_url).toContain(`/dev/pay/${body.registration_id}`);
+    expect(body.checkout_url).toContain(`/fake-checkout?rid=${body.registration_id}`);
 
     const svc = service();
     const reg = await svc.from("registrations").select("status,total_amount").eq("id", body.registration_id).single();
@@ -168,6 +168,39 @@ describe("payment confirmation (fake) e2e", () => {
 
     const after = await svc.from("categories").select("slots_taken").eq("id", "00000000-0000-0000-0000-0000000000c4").single();
     expect(after.data!.slots_taken).toBe(before.data!.slots_taken + 1); // relative — robust to prior runs
+
+    await svc.from("registrations").delete().eq("id", checkout.registration_id);
+    await svc.auth.admin.deleteUser(user.id);
+  });
+});
+
+describe("fake-checkout sandbox page", () => {
+  it("action=pay confirms the registration and returns a bounce page", async () => {
+    const svc = service();
+    const user = await makeUser(`fc_${Date.now()}@test.dev`);
+    const checkout = await fetch(`${FN}/registrations-checkout`, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({
+        event_id: "00000000-0000-0000-0000-0000000000e1",
+        category_id: "00000000-0000-0000-0000-0000000000c4",
+        custom_data: { blood_type: "A", shirt_size: "L" },
+        waiver_accepted: true,
+        idempotency_key: `idem-fc-${Date.now()}`,
+      }),
+    }).then((r) => r.json());
+
+    const ret = "trailultra://pay-callback";
+    const res = await fetch(
+      `${FN}/fake-checkout?rid=${checkout.registration_id}&return=${encodeURIComponent(ret)}&action=pay`,
+    );
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("Payment complete");
+
+    const reg = await svc.from("registrations").select("status,ticket_token").eq("id", checkout.registration_id).single();
+    expect(reg.data?.status).toBe("paid");
+    expect(reg.data?.ticket_token).toContain(".");
 
     await svc.from("registrations").delete().eq("id", checkout.registration_id);
     await svc.auth.admin.deleteUser(user.id);

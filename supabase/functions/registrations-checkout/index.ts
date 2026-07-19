@@ -59,7 +59,10 @@ Deno.serve(async (req) => {
     const checkout = await getPaymentProvider().createCheckout({
       registrationId: reg.id, amount: total, description: category.label,
     });
-    await db.from("payments").update({ provider_ref: checkout.providerRef }).eq("registration_id", reg.id);
+    await db.from("payments").update({
+      provider_ref: checkout.providerRef,
+      checkout_url: checkout.checkoutUrl,
+    }).eq("registration_id", reg.id);
 
     return json({ registration_id: reg.id, checkout_url: checkout.checkoutUrl });
   } catch (e) {
