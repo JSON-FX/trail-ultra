@@ -25,5 +25,5 @@ ultra-trail event platform (Mindanao, Philippines).
 - [x] **01 · Mobile (iOS) MVP** — [detailed spec](./01-mobile-ios-mvp.md) for the first build
 - [x] **Plan 1 · Local backend foundation** — [built & merged](./plans/01-local-backend-foundation.md), 13 tests green
 - [x] **Plan 2 · App foundation** — [built & merged](./plans/02-app-foundation.md), 7 app + 13 backend tests green; **verified end-to-end on iOS Simulator** ✓
-- [x] **Plan 3 · Browse & register** — [written](./plans/03-browse-register.md), ready to build
+- [x] **Plan 3 · Browse & register** — [built & merged](./plans/03-browse-register.md), 14 app tests green (simulator acceptance pending)
 - [ ] **Plan 4 · Pay / ticket / offline** — to write
