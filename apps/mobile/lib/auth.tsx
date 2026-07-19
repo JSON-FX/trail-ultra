@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { clearTicketCache } from "./ticketCache";
 
 type AuthValue = {
   session: Session | null;
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signUp({ email, password });
     return error ? { error: error.message } : {};
   };
-  const signOut = async () => { await supabase.auth.signOut(); };
+  const signOut = async () => { await clearTicketCache(); await supabase.auth.signOut(); };
 
   return (
     <AuthContext.Provider value={{ session, loading, signIn, signUp, signOut }}>
