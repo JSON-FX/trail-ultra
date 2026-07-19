@@ -20,12 +20,13 @@ jest.mock("../lib/ticketCache", () => ({ getCachedTicket: jest.fn().mockResolved
 // referentially stable across renders via structural sharing, so this never happens in
 // production — the mock must model that stability. Hoisting to a `mock`-prefixed const (same
 // idiom already used in pay-screen.test.tsx's `mockRegData` for this exact reason) fixes it.
-const mockRegData = { id: "r1abc999", status: "paid", ticket_token: "tok.sig", eventName: "Apo Sky Ultra 2026", categoryLabel: "21K", org_id: "o1" };
+let mockRegData: any = { id: "r1abc999", status: "paid", ticket_token: "tok.sig", eventName: "Apo Sky Ultra 2026", categoryLabel: "21K", org_id: "o1" };
 jest.mock("../lib/registration", () => ({
   useRegistration: () => ({ data: mockRegData, isLoading: false }),
 }));
 
 import Ticket from "../app/ticket/[registrationId]";
+import { getCachedTicket } from "../lib/ticketCache";
 
 describe("Ticket screen", () => {
   it("renders the event, category, and a QR of the ticket token", async () => {
@@ -33,5 +34,16 @@ describe("Ticket screen", () => {
     expect(await screen.findByText("Apo Sky Ultra 2026")).toBeOnTheScreen();
     expect(screen.getByText("21K")).toBeOnTheScreen();
     expect(screen.getByText("QR:tok.sig")).toBeOnTheScreen();
+  });
+
+  it("renders from cache when offline (no live server data)", async () => {
+    mockRegData = undefined; // offline: no server data, and reg.isLoading is false
+    (getCachedTicket as jest.Mock).mockResolvedValueOnce({
+      rid: "r1abc999", token: "cached.tok", eventName: "Apo Sky Ultra 2026",
+      categoryLabel: "50K", runnerName: "", status: "paid", orgId: "o1",
+    });
+    render(<Ticket />);
+    expect(await screen.findByText("50K")).toBeOnTheScreen();
+    expect(screen.getByText("QR:cached.tok")).toBeOnTheScreen();
   });
 });

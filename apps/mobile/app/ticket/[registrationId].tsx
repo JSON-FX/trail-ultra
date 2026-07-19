@@ -15,7 +15,9 @@ export default function Ticket() {
 
   // Offline-first: paint from cache immediately.
   useEffect(() => {
-    getCachedTicket(registrationId).then((c) => { setCached(c); setCacheLoaded(true); });
+    getCachedTicket(registrationId)
+      .then((c) => { setCached(c); setCacheLoaded(true); })
+      .catch(() => setCacheLoaded(true));
   }, [registrationId]);
 
   // Refresh the cache when fresh server data confirms paid.
@@ -28,6 +30,7 @@ export default function Ticket() {
       cacheTicket(t);
       setCached(t);
     }
+    // `cached` intentionally excluded — adding it would rebuild `t` and re-trigger this effect on every setCached, looping forever.
   }, [reg.data]);
 
   const token = reg.data?.ticket_token ?? cached?.token ?? null;
