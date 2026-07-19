@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 16, fontWeight: "600", color: theme.ink },
   totalValue: { fontSize: 18, fontWeight: "700", color: theme.pine },
   err: { color: theme.stop, marginTop: 12 },
-  btn: { backgroundColor: theme.pine, borderRadius: 12, padding: 15, alignItems: "center", marginTop: 18 },
+  btn: { backgroundColor: theme.pine, borderRadius: theme.radius.pill, padding: 15, alignItems: "center", marginTop: 18 },
   btnT: { color: "#fff", fontWeight: "600", fontSize: 16 },
 });

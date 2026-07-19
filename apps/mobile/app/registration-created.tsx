@@ -23,6 +23,6 @@ const styles = StyleSheet.create({
   sub: { color: theme.ink, fontSize: 15 },
   rid: { color: theme.inkSoft, fontFamily: "Courier", marginTop: 4 },
   note: { color: theme.inkSoft, textAlign: "center", marginTop: 8 },
-  btn: { backgroundColor: theme.pine, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 22, marginTop: 20 },
+  btn: { backgroundColor: theme.pine, borderRadius: theme.radius.pill, paddingVertical: 14, paddingHorizontal: 28, marginTop: 20 },
   btnT: { color: "#fff", fontWeight: "600", fontSize: 16 },
 });
