@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { formatPeso, formatAddress } from "@race-pace/shared";
+import { formatPeso } from "@race-pace/shared";
 import { useEvent, useCategories } from "../../lib/events";
 import { ElevationHero } from "../../components/ElevationHero";
 import { OrgAvatar } from "../../components/OrgAvatar";
@@ -53,7 +53,7 @@ export default function EventDetail() {
             <OrgAvatar name={event.org_name} color={event.org_color} size={34} />
             <View style={{ flex: 1 }}>
               <Text style={styles.orgName}>{event.org_name}</Text>
-              {(event.province_name || event.region) ? <Text style={styles.orgRegion}>{event.province_name ?? event.region}</Text> : null}
+              {(event.province_name ?? event.region) ? <Text style={styles.orgRegion}>{event.province_name ?? event.region}</Text> : null}
             </View>
             <Text style={styles.view}>View ›</Text>
           </Pressable>
