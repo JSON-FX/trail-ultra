@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { formatAddress } from "@race-pace/shared";
 import type { EventRow } from "../lib/events";
 import { ElevationHero } from "./ElevationHero";
 import { OrgAvatar } from "./OrgAvatar";
@@ -9,7 +10,7 @@ import { theme } from "../lib/theme";
 export function EventCard({ event, showOrg = true, onPress }: { event: EventRow; showOrg?: boolean; onPress: () => void }) {
   const cancelled = eventStatusKind(event) === "cancelled";
   const dateLabel = event.event_date ? (cancelled ? `was ${shortDate(event.event_date)}` : shortDate(event.event_date)) : "";
-  const meta = [event.place, dateLabel].filter(Boolean).join(" · ");
+  const meta = [formatAddress(event) || event.place, dateLabel].filter(Boolean).join(" · ");
   return (
     <Pressable style={styles.card} onPress={onPress} accessibilityRole="button">
       <View>

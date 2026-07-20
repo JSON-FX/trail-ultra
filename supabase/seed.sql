@@ -15,24 +15,33 @@ insert into organizations (id, name, slug, brand_color, commission_rate, descrip
 
 -- Events. e1 kept (+description); e2..e5 are the design's marketplace, incl. one
 -- rescheduled (e3) and one cancelled (e4).
-insert into events (id, org_id, name, place, region, event_date, status, elevation_gain_m, cutoff_hours, description, original_date, status_note) values
+-- PSGC codes looked up post-`db reset` from psgc_cities (see migration ..140100):
+--   e1/e4 City of Digos/Davao (Davao Del Sur, Davao Region); e2 City of Kidapawan
+--   (Cotabato, SOCCSKSARGEN); e3 City of Malaybalay (Bukidnon, Northern Mindanao);
+--   e5 Lantapan municipality (Bukidnon, Northern Mindanao).
+insert into events (id, org_id, name, place, region, event_date, status, elevation_gain_m, cutoff_hours, description, original_date, status_note, city_psgc_code, region_name, province_name, city_name, venue) values
   ('00000000-0000-0000-0000-0000000000e1', '00000000-0000-0000-0000-0000000000a1',
    'Apo Sky Ultra 2026', 'Mt Apo', 'Davao', '2026-11-14', 'open', 4200, 20,
-   'The flagship 100K around Mt Apo — technical ridgelines, mossy forest, and a summit sunrise.', null, null),
+   'The flagship 100K around Mt Apo — technical ridgelines, mossy forest, and a summit sunrise.', null, null,
+   '112403000', 'Davao Region', 'Davao Del Sur', 'City of Digos', 'Kapatagan Base Camp'),
   ('00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000a2',
    'Mt. Apo Sky Ultra', 'Kidapawan', 'Davao del Sur', '2026-10-18', 'open', 4300, 18,
-   'The flagship 100K around Mindanao''s highest peak — 4,300m of climbing through mossy forest and summit ridgelines.', null, null),
+   'The flagship 100K around Mindanao''s highest peak — 4,300m of climbing through mossy forest and summit ridgelines.', null, null,
+   '124704000', 'SOCCSKSARGEN', 'Cotabato', 'City of Kidapawan', 'Ilomavis Trailhead'),
   ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-0000000000a3',
    'Bukidnon Highland 50', 'Malaybalay', 'Bukidnon', '2026-09-27', 'open', 2600, 14,
    'A fast 50K through pine ridges and cloud forest above Malaybalay. Your slot carries over to the new date.',
-   '2026-09-14', 'Your slot carries over to the new date. Registration remains open for the remaining places.'),
+   '2026-09-14', 'Your slot carries over to the new date. Registration remains open for the remaining places.',
+   '101312000', 'Northern Mindanao', 'Bukidnon', 'City of Malaybalay', 'Malaybalay City Coliseum'),
   ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-0000000000a4',
    'Davao River Trail 21', 'Davao City', 'Davao', '2026-08-30', 'cancelled', 900, 8,
    'A 21K along the Davao river trail.', null,
-   'Registrations are closed. Paid runners will be refunded automatically — check My Races for status.'),
+   'Registrations are closed. Paid runners will be refunded automatically — check My Races for status.',
+   '112402000', 'Davao Region', 'Davao Del Sur', 'City of Davao', 'Davao Riverfront Park'),
   ('00000000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-0000000000a5',
    'Kitanglad Skyrace', 'Lantapan', 'Bukidnon', '2026-11-22', 'almost_full', 3100, 16,
-   'A sky race up the Kitanglad range — the second-highest peaks in the Philippines.', null, null);
+   'A sky race up the Kitanglad range — the second-highest peaks in the Philippines.', null, null,
+   '101310000', 'Northern Mindanao', 'Bukidnon', 'Lantapan', 'Kitanglad Range Natural Park HQ');
 
 -- Categories. e1 keeps c1..c4; e2 uses the design's four distances (c5..c8); e3 c9/ca; e4 cb; e5 cc/cd.
 insert into categories (id, org_id, event_id, code, label, distance_km, base_price, slots_total, slots_taken) values
