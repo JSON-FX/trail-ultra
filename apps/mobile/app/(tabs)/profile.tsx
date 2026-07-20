@@ -6,6 +6,8 @@ import { useAuth } from "../../lib/auth";
 import { getProfile, upsertProfile } from "../../lib/profile";
 import { initials } from "../../components/OrgAvatar";
 import { theme } from "../../lib/theme";
+import { PillSelect } from "../../components/PillSelect";
+import { BLOOD_TYPES, SHIRT_SIZES, GENDERS } from "@race-pace/shared";
 
 const MENU = ["Payment methods", "Notifications", "Help & support"];
 
@@ -17,19 +19,32 @@ export default function Profile() {
   const [fullName, setFullName] = useState("");
   const [bibName, setBibName] = useState("");
   const [city, setCity] = useState("");
+  const [dob, setDob] = useState("");
+  const [gender, setGender] = useState("");
+  const [shirtSize, setShirtSize] = useState("");
+  const [bloodType, setBloodType] = useState("");
+  const [emergency, setEmergency] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!uid) return;
     getProfile(uid).then((p) => {
-      if (p) { setFullName(p.full_name ?? ""); setBibName(p.bib_name ?? ""); setCity(p.city ?? ""); }
+      if (p) {
+        setFullName(p.full_name ?? ""); setBibName(p.bib_name ?? ""); setCity(p.city ?? "");
+        setDob(p.date_of_birth ?? ""); setGender(p.gender ?? ""); setShirtSize(p.shirt_size ?? "");
+        setBloodType(p.blood_type ?? ""); setEmergency(p.emergency_contact ?? "");
+      }
     });
   }, [uid]);
 
   async function save() {
     if (!uid) return;
     setBusy(true);
-    const { error } = await upsertProfile({ id: uid, full_name: fullName, bib_name: bibName, city });
+    const { error } = await upsertProfile({
+      id: uid, full_name: fullName, bib_name: bibName, city,
+      date_of_birth: dob || null, gender: gender || null, shirt_size: shirtSize || null,
+      blood_type: bloodType || null, emergency_contact: emergency || null,
+    });
     setBusy(false);
     Alert.alert(error ? "Save failed" : "Saved", error ?? "Your profile was updated.");
   }
@@ -52,6 +67,17 @@ export default function Profile() {
           <View><Text style={styles.label}>BIB NAME</Text><TextInput style={styles.input} value={bibName} onChangeText={setBibName} placeholder="Bib name" placeholderTextColor={theme.inkFaint} autoCapitalize="characters" accessibilityLabel="Bib name" /></View>
           <View><Text style={styles.label}>CITY</Text><TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="City" placeholderTextColor={theme.inkFaint} accessibilityLabel="City" /></View>
         </View>
+
+        <Text style={[styles.section, { marginTop: 26 }]}>Race details</Text>
+        <Text style={styles.hint}>Fill these once — we'll add them to every race you register for.</Text>
+        <View style={{ gap: 12 }}>
+          <View><Text style={styles.label}>DATE OF BIRTH</Text><TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="YYYY-MM-DD" placeholderTextColor={theme.inkFaint} autoCapitalize="none" accessibilityLabel="Date of birth" /></View>
+          <PillSelect label="GENDER" value={gender} options={GENDERS} onChange={setGender} />
+          <PillSelect label="SHIRT SIZE" value={shirtSize} options={SHIRT_SIZES} onChange={setShirtSize} />
+          <PillSelect label="BLOOD TYPE" value={bloodType} options={BLOOD_TYPES} onChange={setBloodType} />
+          <View><Text style={styles.label}>EMERGENCY CONTACT</Text><TextInput style={styles.input} value={emergency} onChangeText={setEmergency} placeholder="Name & mobile number" placeholderTextColor={theme.inkFaint} accessibilityLabel="Emergency contact" /></View>
+        </View>
+
         <Pressable style={[styles.save, busy && { opacity: 0.6 }]} disabled={busy} onPress={save} accessibilityRole="button"><Text style={styles.saveT}>{busy ? "Saving…" : "Save changes"}</Text></Pressable>
 
         <View style={styles.menu}>
@@ -74,6 +100,7 @@ const styles = StyleSheet.create({
   sub: { fontSize: 13, color: theme.inkMuted, marginTop: 2 },
   pad: { paddingHorizontal: 22, marginTop: 24 },
   section: { fontSize: 15, fontWeight: "600", color: theme.ink, marginBottom: 12 },
+  hint: { fontSize: 13, color: theme.inkMuted, marginTop: -6, marginBottom: 12, lineHeight: 18 },
   label: { fontSize: 11, fontWeight: "600", letterSpacing: 0.4, color: theme.inkMuted, marginBottom: 6 },
   input: { backgroundColor: theme.canvas, borderWidth: 1, borderColor: theme.hairline, borderRadius: theme.radius.md, paddingVertical: 13, paddingHorizontal: 14, fontSize: 15, color: theme.ink },
   save: { backgroundColor: theme.primary, borderRadius: theme.radius.pill, padding: 15, alignItems: "center", marginTop: 20 },
