@@ -160,6 +160,26 @@ describe("registrations-checkout", () => {
     await svc.from("registrations").delete().eq("id", body.registration_id);
     await svc.auth.admin.deleteUser(user.id);
   });
+
+  // Model B hardening: required profile-key fields (blood_type f1, shirt_size f3 on e1) must be
+  // present + non-empty in custom_data — enforced by presence, NOT the org enum (canonical values
+  // still pass). A direct/replayed API caller that omits a required passport field is rejected.
+  it("rejects a registration that omits a required profile-key field", async () => {
+    const user = await makeUser(`missing_${Date.now()}@test.dev`);
+    const res = await fetch(`${FN}/registrations-checkout`, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({
+        event_id: "00000000-0000-0000-0000-0000000000e1",
+        category_id: "00000000-0000-0000-0000-0000000000c3",
+        custom_data: { shirt_size: "M" }, // omits required blood_type (f1)
+        waiver_accepted: true,
+        idempotency_key: `idem-missing-${Date.now()}`,
+      }),
+    });
+    expect(res.status).toBe(400);
+    await service().auth.admin.deleteUser(user.id);
+  });
 });
 
 describe("payment confirmation (fake) e2e", () => {

@@ -40,6 +40,16 @@ Deno.serve(async (req) => {
     const cd = customDataSchema(fields).safeParse(input.custom_data);
     if (!cd.success) return json({ error: "invalid_custom_data", details: cd.error.flatten() }, 400);
 
+    // Model B: profile-key fields aren't enum-validated above, but a REQUIRED one must still be
+    // present + non-empty — a presence check (NOT the org enum, so canonical values pass). The
+    // client enforces this too; this guards direct/replayed API calls (e.g. race-day blood_type).
+    const cdObj = (input.custom_data ?? {}) as Record<string, unknown>;
+    const missingRequired = (fieldRows ?? [])
+      .filter((f) => isProfileKey(f.key) && f.required)
+      .map((f) => f.key)
+      .filter((k) => { const v = cdObj[k]; return v === undefined || v === null || (typeof v === "string" && v.trim() === ""); });
+    if (missingRequired.length) return json({ error: "invalid_custom_data", details: { missing_required: missingRequired } }, 400);
+
     const addonIds = input.addon_ids.length ? input.addon_ids : ["00000000-0000-0000-0000-000000000000"];
     const { data: addons } = await db.from("addons").select("*").in("id", addonIds);
     const addonTotal = (addons ?? []).reduce((s, a) => s + a.price, 0);
