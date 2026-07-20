@@ -1,6 +1,6 @@
-# 01 · Mobile (iOS) MVP — trail-ultra runner app
+# 01 · Mobile (iOS) MVP — race-pace runner app
 
-- **Product:** trail-ultra — iOS runner app (first build)
+- **Product:** race-pace — iOS runner app (first build)
 - **Status:** Draft v0.1
 - **Last updated:** 2026-07-19
 - **Owner:** Product (jayson@voltcontent.com)
@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-The iOS runner app is the first build of trail-ultra. A runner signs in, chooses an
+The iOS runner app is the first build of race-pace. A runner signs in, chooses an
 organization, discovers one of its events, registers (core details + the org's custom
 fields + waiver + add-ons), pays via PayMongo, and receives a **signed QR ticket that
 works fully offline**. This spec covers the runner journey end to end on iOS, built on
@@ -53,7 +53,7 @@ acceptance scenarios in §11.
 | Offline cache | **MMKV** (paid tickets + light read-only cache) |
 | Payment redirect | **in-app WebView** via `expo-web-browser`, deep-link return |
 | QR **display** | `react-native-qrcode-svg` (no camera in the runner app) |
-| Shared logic | `@trail-ultra/shared` (types + Zod validators, incl. `customDataSchema()`) |
+| Shared logic | `@race-pace/shared` (types + Zod validators, incl. `customDataSchema()`) |
 
 **Backend dependencies** (built in M0; interfaces this app relies on):
 - **Supabase (RLS reads/writes):** `organizations`, `events`, `categories`, `addons`,
@@ -134,7 +134,7 @@ Every data screen implements four states: **loading** (skeleton), **empty**, **e
    `registration`, returns `{registration_id, checkout_url}`.
 2. **Checkout.** Open `checkout_url` in an in-app WebView (`expo-web-browser`). Runner pays
    via Card / GCash / Maya.
-3. **Return.** Provider redirects to the deep link `trailultra://pay/return`; the app closes
+3. **Return.** Provider redirects to the deep link `racepace://pay/return`; the app closes
    the WebView and shows **Pending** — it does **not** treat the redirect as success.
 4. **Confirm.** App awaits the webhook via realtime (poll fallback every ~3s, timing out
    at ~90s with a "still processing" message). On `registration.status = paid`, transition
@@ -155,7 +155,7 @@ Every data screen implements four states: **loading** (skeleton), **empty**, **e
 - On entering **Register — Form**, fetch the event/org `form_fields` (ordered).
 - Render one control per field type: `text` · `number` · `select` · `checkbox` · `date` ·
   `file` (file uploads to Supabase Storage, storing the path in `custom_data`).
-- Validate with **`customDataSchema(fields)` from `@trail-ultra/shared`** — the **same**
+- Validate with **`customDataSchema(fields)` from `@race-pace/shared`** — the **same**
   builder the Edge Function uses server-side, so client and server enforce identical rules.
 - Submit answers as the `registrations.custom_data` JSONB object.
 
@@ -212,7 +212,7 @@ notifications, results/timing, in-app refunds, self-serve org onboarding, cross-
   Function, the PayMongo webhook handler + ticket-token minting, and a seeded org + event.
 - **`DESIGN.md`** generated via `npx getdesign@latest add apple`.
 - **Analytics provider** selection (PRD open item).
-- **Deep-link scheme** `trailultra://` registered in the Expo config.
+- **Deep-link scheme** `racepace://` registered in the Expo config.
 
 ---
 

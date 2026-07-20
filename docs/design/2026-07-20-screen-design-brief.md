@@ -1,6 +1,6 @@
-# trail-ultra — Screen Design Brief (hand-off to a design agent)
+# race-pace — Screen Design Brief (hand-off to a design agent)
 
-**Purpose.** You are a **design agent**. Produce screen mockups for two surfaces of trail-ultra — the **iOS runner app** and the **Admin web console** — all in one consistent visual system. This document is self-contained: it tells you the design language, the product, and every screen with its content, actions, and states.
+**Purpose.** You are a **design agent**. Produce screen mockups for two surfaces of race-pace — the **iOS runner app** and the **Admin web console** — all in one consistent visual system. This document is self-contained: it tells you the design language, the product, and every screen with its content, actions, and states.
 
 ---
 
@@ -46,7 +46,7 @@ Apple-marketing aesthetic: calm, spacious, high-contrast, hairline-delineated, *
 
 ## 2. Product context (one read)
 
-trail-ultra is a **multi-organization** trail-run & ultra platform for Mindanao, Philippines. **Runners** browse a **marketplace** of events across organizations, open an event, register (core details + the org's custom fields + waiver + add-ons), pay in **₱ (PHP)** via PayMongo (Card / GCash / Maya), and carry a **signed QR ticket that works offline**. **Race directors** (organizations) run their events from the **Admin web** — create events, manage registrations and payments, check runners in at the start line, and see settlement. Data is siloed per organization; a runner has one global account.
+race-pace is a **multi-organization** trail-run & ultra platform for Mindanao, Philippines. **Runners** browse a **marketplace** of events across organizations, open an event, register (core details + the org's custom fields + waiver + add-ons), pay in **₱ (PHP)** via PayMongo (Card / GCash / Maya), and carry a **signed QR ticket that works offline**. **Race directors** (organizations) run their events from the **Admin web** — create events, manage registrations and payments, check runners in at the start line, and see settlement. Data is siloed per organization; a runner has one global account.
 
 - **Money:** always ₱ with 2 decimals, e.g. `₱1,500.00` (stored as integer centavos).
 - **Roles:** `user` (runner) · `marshal` (check-in) · `editor` (event content) · `admin` (org operations) · `super_admin` (platform).

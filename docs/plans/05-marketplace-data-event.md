@@ -6,7 +6,7 @@
 
 **Architecture:** Additive Supabase migration (org profile + event content + `cancelled` enum) + a multi-org seed with demo cancelled/rescheduled events. The app's read layer (`lib/events.ts`) gains marketplace/org fetchers over `supabase-js` + TanStack Query. Three reusable components (`StatusBadge`, `EventCard`, `EventGallery`) render events consistently. The Events tab becomes the marketplace; the event page renders the gallery/description/org header/status banner.
 
-**Tech Stack:** Supabase (Postgres migrations + seed), Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@trail-ultra/shared` (`formatPeso`), jest-expo + `@testing-library/react-native`, root Vitest (backend).
+**Tech Stack:** Supabase (Postgres migrations + seed), Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@race-pace/shared` (`formatPeso`), jest-expo + `@testing-library/react-native`, root Vitest (backend).
 
 ## Global Constraints
 
@@ -693,7 +693,7 @@ Replace `apps/mobile/app/event/[id].tsx`:
 ```tsx
 import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { formatPeso } from "@trail-ultra/shared";
+import { formatPeso } from "@race-pace/shared";
 import { useEvent, useCategories, useOrg } from "../../lib/events";
 import { EventGallery } from "../../components/EventGallery";
 import { StatusBanner, eventStatusKind } from "../../components/StatusBadge";

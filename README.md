@@ -1,4 +1,4 @@
-# trail-ultra
+# race-pace
 
 Multi-organization trail & ultra-trail event platform (Mindanao, Philippines).
 **One runner account, many organizations, strictly isolated data.**
@@ -9,7 +9,7 @@ Multi-organization trail & ultra-trail event platform (Mindanao, Philippines).
 
 | Path | What |
 | --- | --- |
-| [`docs/`](./docs) | Planning — [PRD](./docs/00-product-overview.md), [ADRs](./docs/adr), [visual flows](./docs/trail-ultra-flows.html) |
+| [`docs/`](./docs) | Planning — [PRD](./docs/00-product-overview.md), [ADRs](./docs/adr), [visual flows](./docs/race-pace-flows.html) |
 | `apps/mobile/` | Expo (React Native) — iOS + Android *(to scaffold)* |
 | `apps/web/` | React + Vite — admin console; storefront later *(to scaffold)* |
 | `packages/shared/` | Shared TypeScript — types + Zod validators used across every surface |

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Race Pace",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "trailultra",
+    "scheme": "racepace",
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",

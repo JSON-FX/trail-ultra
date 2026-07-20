@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import { FunctionsHttpError } from "@supabase/supabase-js";
-import type { RegistrationInput } from "@trail-ultra/shared";
+import type { RegistrationInput } from "@race-pace/shared";
 import { useQuery } from "@tanstack/react-query";
 
 export type CheckoutResult = { registration_id: string; checkout_url: string };

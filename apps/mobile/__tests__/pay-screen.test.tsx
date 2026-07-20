@@ -7,7 +7,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react-nativ
 const mockReplace = jest.fn();
 const mockOpenAuth = jest.fn().mockResolvedValue({ type: "dismiss" });
 jest.mock("expo-web-browser", () => ({ openAuthSessionAsync: (...a: unknown[]) => mockOpenAuth(...a) }));
-jest.mock("expo-linking", () => ({ createURL: (p: string) => `trailultra://${p}` }));
+jest.mock("expo-linking", () => ({ createURL: (p: string) => `racepace://${p}` }));
 jest.mock("../lib/ticketCache", () => ({ cacheTicket: jest.fn() }));
 
 let mockRegData: any = {
@@ -30,7 +30,7 @@ describe("Pay screen", () => {
     const [full, redirect] = mockOpenAuth.mock.calls[0];
     expect(full).toContain("http://x/functions/v1/fake-checkout?rid=r1");
     expect(full).toContain("return=");
-    expect(redirect).toBe("trailultra://pay-callback");
+    expect(redirect).toBe("racepace://pay-callback");
     // still shows the pending state (not "confirmed") because status is still pending
     expect(screen.getByText("Waiting for payment confirmation…")).toBeOnTheScreen();
   });

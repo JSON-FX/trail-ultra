@@ -190,7 +190,7 @@ describe("fake-checkout sandbox page", () => {
       }),
     }).then((r) => r.json());
 
-    const ret = "trailultra://pay-callback";
+    const ret = "racepace://pay-callback";
     const res = await fetch(
       `${FN}/fake-checkout?rid=${checkout.registration_id}&return=${encodeURIComponent(ret)}&action=pay`,
     );

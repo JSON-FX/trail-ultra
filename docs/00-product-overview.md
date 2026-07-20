@@ -1,6 +1,6 @@
-# trail-ultra — Product Overview PRD
+# race-pace — Product Overview PRD
 
-- **Product:** trail-ultra — a **multi-organization** trail-run & ultra-trail event platform
+- **Product:** race-pace — a **multi-organization** trail-run & ultra-trail event platform
 - **Region / context:** Mindanao, Philippines (Davao, Bukidnon, Cotabato). Prices in ₱ (PHP).
 - **Status:** Draft v0.4
 - **Last updated:** 2026-07-19
@@ -10,7 +10,7 @@
 
 ## 1. Summary
 
-trail-ultra lets many race **organizations** run their own trail & ultra events on
+race-pace lets many race **organizations** run their own trail & ultra events on
 one shared platform. A runner signs up **once** and uses a single account
 everywhere; they enter **org-first** — choose an organization, then live inside
 its branded world of events, register and pay in minutes, and carry a scannable
@@ -95,7 +95,7 @@ is specified in detail in [01 · Mobile (iOS) MVP](./01-mobile-ios-mvp.md).
 - **Marshal — Check-in staff (operational).** A volunteer with the `marshal`
   role, scoped to one org (usually one event); scans tickets at the start line
   and can look up a runner's entry, but sees nothing financial.
-- **Pat — the Platform Operator (super_admin).** Runs trail-ultra itself.
+- **Pat — the Platform Operator (super_admin).** Runs race-pace itself.
   Provisions organizations and their first admins, sets each org's commission,
   runs payouts/settlement, and owns global settings. The only role that can see
   across organizations.

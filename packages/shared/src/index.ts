@@ -1,4 +1,4 @@
-// @trail-ultra/shared — TypeScript types + validators shared by
+// @race-pace/shared — TypeScript types + validators shared by
 // mobile (Expo), web (Vite), and Supabase Edge Functions (Deno).
 //
 // Keep this framework-agnostic: no React, no Node/Deno-specific APIs — just

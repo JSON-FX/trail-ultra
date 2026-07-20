@@ -3,7 +3,7 @@ import { Text } from "react-native";
 
 describe("harness", () => {
   it("renders", () => {
-    const { getByText } = render(<Text>hello trail-ultra</Text>);
-    expect(getByText("hello trail-ultra")).toBeOnTheScreen();
+    const { getByText } = render(<Text>hello race-pace</Text>);
+    expect(getByText("hello race-pace")).toBeOnTheScreen();
   });
 });

@@ -6,7 +6,7 @@
 
 **Architecture:** Builds on **Plan A** (which added `useOrgs`/`useOrg`/`useEventsByOrg`, `EventCard`, and `StatusBanner`). New Orgs list + Org page reuse those. Then the org-context is removed in dependency order — consumers first (races, profile), the `lib/org.tsx` module and choose-org screen **last** — so every task stays tsc-clean. My Races drops its org filter (RLS already restricts to own rows) and uses a single global cache key; the ticket reads the event's lifecycle fields to show a Cancelled/Rescheduled banner.
 
-**Tech Stack:** Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@trail-ultra/shared`, jest-expo + `@testing-library/react-native`.
+**Tech Stack:** Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@race-pace/shared`, jest-expo + `@testing-library/react-native`.
 
 ## Global Constraints
 

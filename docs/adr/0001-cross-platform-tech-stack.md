@@ -1,4 +1,4 @@
-# ADR-0001: Cross-platform tech stack for trail-ultra
+# ADR-0001: Cross-platform tech stack for race-pace
 
 **Status:** Accepted
 **Date:** 2026-07-19
@@ -7,7 +7,7 @@
 
 ## Context
 
-trail-ultra is a multi-tenant trail & ultra-trail event platform (see the PRD). The
+race-pace is a multi-tenant trail & ultra-trail event platform (see the PRD). The
 MVP ships two surfaces — a **runner mobile app (iOS first, then Android)** and an
 **admin web console** — with a public e-commerce web storefront deferred.
 

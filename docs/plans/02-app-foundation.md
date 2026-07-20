@@ -6,7 +6,7 @@
 
 **Architecture:** Expo Router (file-based) app running in **Expo Go**. A `supabase-js` client (AsyncStorage-backed session) feeds two React contexts — `AuthProvider` (session) and `OrgProvider` (selected org, persisted). The root layout gates routing: no session → auth stack; session but no org → Choose Organization; both → tabs. Everything is TypeScript, styled per `DESIGN.md`.
 
-**Tech Stack:** Expo SDK + Expo Router, TypeScript, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `react-native-url-polyfill`, jest-expo + `@testing-library/react-native`, `@trail-ultra/shared` (via monorepo Metro).
+**Tech Stack:** Expo SDK + Expo Router, TypeScript, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `react-native-url-polyfill`, jest-expo + `@testing-library/react-native`, `@race-pace/shared` (via monorepo Metro).
 
 ## Global Constraints
 
@@ -16,7 +16,7 @@
 - **Sign-in-first, org-first:** no route renders app content without a session; no Events without a selected org.
 - **Env, never hard-coded:** `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Simulator → `http://127.0.0.1:54521`; physical device → `http://<host>.lan:54521`.
 - **Backend is Plan 1 running locally** (`supabase start` + `functions serve`). The seeded org is *Run With Point* (`run-with-point`).
-- **Money display** uses `formatPeso` from `@trail-ultra/shared`.
+- **Money display** uses `formatPeso` from `@race-pace/shared`.
 - **App tests use jest-expo** (separate from the root Vitest, which owns `packages/**` + `supabase/**`).
 
 ## File Structure
@@ -78,13 +78,13 @@ Edit `apps/mobile/package.json` `dependencies` to include (versions resolved by 
 "@supabase/supabase-js": "^2.110.7",
 "@react-native-async-storage/async-storage": "*",
 "react-native-url-polyfill": "*",
-"@trail-ultra/shared": "workspace:*"
+"@race-pace/shared": "workspace:*"
 ```
 Then from repo root:
 ```bash
 cd apps/mobile && pnpm install && npx expo install --fix && cd ../..
 ```
-Set the entry + scheme in `apps/mobile/package.json` / `app.json`: `"main": "expo-router/entry"`, and in `app.json` add `"scheme": "trailultra"` and `"plugins": ["expo-router"]`.
+Set the entry + scheme in `apps/mobile/package.json` / `app.json`: `"main": "expo-router/entry"`, and in `app.json` add `"scheme": "racepace"` and `"plugins": ["expo-router"]`.
 
 - [ ] **Step 3: Monorepo Metro config**
 
@@ -156,7 +156,7 @@ cd ../..
   "preset": "jest-expo",
   "setupFilesAfterEnv": ["<rootDir>/jest.setup.ts"],
   "transformIgnorePatterns": [
-    "node_modules/(?!(?:.pnpm/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|@supabase/.*|@trail-ultra/.*))"
+    "node_modules/(?!(?:.pnpm/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|@supabase/.*|@race-pace/.*))"
   ]
 }
 ```
@@ -177,8 +177,8 @@ import { Text } from "react-native";
 
 describe("harness", () => {
   it("renders", () => {
-    const { getByText } = render(<Text>hello trail-ultra</Text>);
-    expect(getByText("hello trail-ultra")).toBeOnTheScreen();
+    const { getByText } = render(<Text>hello race-pace</Text>);
+    expect(getByText("hello race-pace")).toBeOnTheScreen();
   });
 });
 ```

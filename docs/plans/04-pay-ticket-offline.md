@@ -6,7 +6,7 @@
 
 **Architecture:** The pending registration created in Plan 3 already returns a `checkout_url`. Plan 4 points the local `FakePaymentProvider` at a **real hosted sandbox-checkout page** served by a new `fake-checkout` Edge Function; opening it in `expo-web-browser`'s auth session lets the tester "pay", which calls the shared `confirmPayment` routine (the same one the PayMongo webhook uses) and deep-links back to the app. The app **does not trust the redirect** — it polls `registrations.status` (TanStack Query `refetchInterval`) until the webhook flips it to `paid`, then caches the ticket to AsyncStorage so the **Ticket** and **My Races** screens work with no network. When PayMongo is wired later, the only change is `getPaymentProvider()` returning a real provider — the app code is identical.
 
-**Tech Stack:** Expo Router, `expo-web-browser` (auth session), `expo-linking` (deep-link return URL), `react-native-qrcode-svg` + `react-native-svg` (QR **display** only), `@react-native-async-storage/async-storage` (offline cache — already in use), `@tanstack/react-query`, Supabase Edge Functions (Deno), `@trail-ultra/shared` (`formatPeso`, `TicketPayload`).
+**Tech Stack:** Expo Router, `expo-web-browser` (auth session), `expo-linking` (deep-link return URL), `react-native-qrcode-svg` + `react-native-svg` (QR **display** only), `@react-native-async-storage/async-storage` (offline cache — already in use), `@tanstack/react-query`, Supabase Edge Functions (Deno), `@race-pace/shared` (`formatPeso`, `TicketPayload`).
 
 ## Global Constraints
 
@@ -15,8 +15,8 @@
 - **A paid ticket renders fully offline.** On confirmation, cache the signed token + display fields to AsyncStorage; the Ticket and My Races screens read cache-first and never require network to show an existing paid ticket.
 - **The runner app DISPLAYS a QR — it never scans.** No camera. `react-native-qrcode-svg` renders `registrations.ticket_token`.
 - **Expo Go compatible — no new *native* modules beyond Expo's bundled set.** Allowed new deps: `expo-web-browser` (Expo module), `react-native-svg` (bundled in Expo Go), `react-native-qrcode-svg` (pure JS). **Do NOT** add `react-native-mmkv` or `react-native-webview` (both break Expo Go); the spec's "MMKV" is satisfied by the already-working AsyncStorage.
-- **Money is integer centavos**; render with `formatPeso` from `@trail-ultra/shared`.
-- **Deep-link return URL via `Linking.createURL(...)`** so it resolves correctly in Expo Go (`exp://…/--/…`) and standalone (`trailultra://…`). The app passes its return URL to the checkout page as a `return` query param; the page bounces back to it.
+- **Money is integer centavos**; render with `formatPeso` from `@race-pace/shared`.
+- **Deep-link return URL via `Linking.createURL(...)`** so it resolves correctly in Expo Go (`exp://…/--/…`) and standalone (`racepace://…`). The app passes its return URL to the checkout page as a `return` query param; the page bounces back to it.
 - **Swap-ready:** all PayMongo-specific behavior stays behind the Edge `PaymentProvider`. App code must not branch on "fake vs real".
 - **Keep the existing backend test suite green.** Two existing assertions change *because the behavior intentionally changed* (checkout URL shape; Plan 3 register route) — update them, do not weaken them.
 - App tests use **jest-expo** (mock Expo modules and the data hooks, like Plans 2–3); backend tests use root **Vitest** against the live local stack.
@@ -296,7 +296,7 @@ describe("fake-checkout sandbox page", () => {
       }),
     }).then((r) => r.json());
 
-    const ret = "trailultra://pay-callback";
+    const ret = "racepace://pay-callback";
     const res = await fetch(
       `${FN}/fake-checkout?rid=${checkout.registration_id}&return=${encodeURIComponent(ret)}&action=pay`,
     );
@@ -616,7 +616,7 @@ import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-nati
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
-import { formatPeso } from "@trail-ultra/shared";
+import { formatPeso } from "@race-pace/shared";
 import { useRegistration } from "../../lib/registration";
 import { cacheTicket } from "../../lib/ticketCache";
 import { theme } from "../../lib/theme";
@@ -757,7 +757,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react-nativ
 const replace = jest.fn();
 const openAuth = jest.fn().mockResolvedValue({ type: "dismiss" });
 jest.mock("expo-web-browser", () => ({ openAuthSessionAsync: (...a: unknown[]) => openAuth(...a) }));
-jest.mock("expo-linking", () => ({ createURL: (p: string) => `trailultra://${p}` }));
+jest.mock("expo-linking", () => ({ createURL: (p: string) => `racepace://${p}` }));
 jest.mock("../lib/ticketCache", () => ({ cacheTicket: jest.fn() }));
 
 let regData: any = {
@@ -780,7 +780,7 @@ describe("Pay screen", () => {
     const [full, redirect] = openAuth.mock.calls[0];
     expect(full).toContain("http://x/functions/v1/fake-checkout?rid=r1");
     expect(full).toContain("return=");
-    expect(redirect).toBe("trailultra://pay-callback");
+    expect(redirect).toBe("racepace://pay-callback");
     // still shows the pending state (not "confirmed") because status is still pending
     expect(screen.getByText("Waiting for payment confirmation…")).toBeOnTheScreen();
   });

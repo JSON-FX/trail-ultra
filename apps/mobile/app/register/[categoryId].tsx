@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, Switch, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { customDataSchema, formatPeso, type FormField } from "@trail-ultra/shared";
+import { customDataSchema, formatPeso, type FormField } from "@race-pace/shared";
 import { useCategory, useFormFields, useAddons } from "../../lib/events";
 import { startCheckout } from "../../lib/registration";
 import { DynamicField } from "../../components/DynamicField";

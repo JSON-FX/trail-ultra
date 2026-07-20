@@ -4,16 +4,16 @@
 
 **Goal:** Turn the placeholder Events tab into a working discovery + registration flow — browse an organization's events, open an event and pick a category, fill the org's **dynamic custom-field** registration form + add-ons + waiver, and submit to create a **pending registration** via the `registrations-checkout` Edge Function. Stops at "registration created (pending payment)"; the WebView payment, webhook confirmation, and ticket are Plan 4.
 
-**Architecture:** Server data comes through **TanStack Query** over `supabase-js`, scoped to the selected org. Screens are Expo Router routes pushed on top of the tab shell: Events (list) → `event/[id]` (detail + categories) → `register/[categoryId]` (form) → `registration-created`. The registration form renders each `form_fields` row by type and validates `custom_data` with **`customDataSchema` from `@trail-ultra/shared`** — the identical schema the Edge Function enforces server-side. Submit calls the Edge Function; on success it routes to a pending-payment confirmation.
+**Architecture:** Server data comes through **TanStack Query** over `supabase-js`, scoped to the selected org. Screens are Expo Router routes pushed on top of the tab shell: Events (list) → `event/[id]` (detail + categories) → `register/[categoryId]` (form) → `registration-created`. The registration form renders each `form_fields` row by type and validates `custom_data` with **`customDataSchema` from `@race-pace/shared`** — the identical schema the Edge Function enforces server-side. Submit calls the Edge Function; on success it routes to a pending-payment confirmation.
 
-**Tech Stack:** Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@trail-ultra/shared` (validators), jest-expo + `@testing-library/react-native`.
+**Tech Stack:** Expo Router, `@tanstack/react-query`, `@supabase/supabase-js`, `@race-pace/shared` (validators), jest-expo + `@testing-library/react-native`.
 
 ## Global Constraints
 
 - **Builds on Plans 1–2 running locally:** `supabase start` + `supabase functions serve` must be up (the seeded org is *Run With Point*, event *Apo Sky Ultra 2026*, categories 100k/50k/21k/10k, add-ons, and 3 form fields).
 - **Server data via TanStack Query + `supabase-js`**, scoped to `useOrg().selectedOrgId`. Every list/detail screen handles **loading / empty / error** states.
-- **Dynamic fields validated with `customDataSchema(fields)` from `@trail-ultra/shared`** — the SAME builder the `registrations-checkout` Edge Function uses. Do not re-implement validation in the app.
-- **Money is integer centavos**; render with `formatPeso` from `@trail-ultra/shared`. Total = category `base_price` + Σ selected add-on prices.
+- **Dynamic fields validated with `customDataSchema(fields)` from `@race-pace/shared`** — the SAME builder the `registrations-checkout` Edge Function uses. Do not re-implement validation in the app.
+- **Money is integer centavos**; render with `formatPeso` from `@race-pace/shared`. Total = category `base_price` + Σ selected add-on prices.
 - **Registration submits via `supabase.functions.invoke("registrations-checkout", ...)`** → `{ registration_id, checkout_url }`. Plan 3 **STOPS** at a "registration created (pending payment)" screen — **no WebView, no payment, no ticket** (Plan 4).
 - **Expo Go compatible — no new native modules.** `date` fields use a plain `TextInput` (`YYYY-MM-DD`); the `file` field type is **out of scope for MVP** (rendered as an unsupported note, not submitted).
 - **Sign-in-first / org-first** already enforced (these routes sit inside the gated tab shell).
@@ -323,7 +323,7 @@ Create `apps/mobile/app/event/[id].tsx`:
 ```tsx
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { formatPeso } from "@trail-ultra/shared";
+import { formatPeso } from "@race-pace/shared";
 import { useEvent, useCategories } from "../../lib/events";
 import { theme } from "../../lib/theme";
 
@@ -512,7 +512,7 @@ Create `apps/mobile/app/register/[categoryId].tsx`:
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { customDataSchema, type FormField } from "@trail-ultra/shared";
+import { customDataSchema, type FormField } from "@race-pace/shared";
 import { useCategory, useFormFields } from "../../lib/events";
 import { DynamicField } from "../../components/DynamicField";
 import { theme } from "../../lib/theme";
@@ -626,7 +626,7 @@ git commit -m "feat(mobile): dynamic form field component + registration form sc
 Create `apps/mobile/lib/registration.ts`:
 ```ts
 import { supabase } from "./supabase";
-import type { RegistrationInput } from "@trail-ultra/shared";
+import type { RegistrationInput } from "@race-pace/shared";
 
 export type CheckoutResult = { registration_id: string; checkout_url: string };
 
@@ -647,7 +647,7 @@ Replace `apps/mobile/app/register/[categoryId].tsx` with the full version (adds 
 import { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, Switch, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { customDataSchema, formatPeso, type FormField } from "@trail-ultra/shared";
+import { customDataSchema, formatPeso, type FormField } from "@race-pace/shared";
 import { useCategory, useFormFields, useAddons } from "../../lib/events";
 import { startCheckout } from "../../lib/registration";
 import { DynamicField } from "../../components/DynamicField";
@@ -876,13 +876,13 @@ git commit -m "chore(mobile): Plan 3 browse & register verified end-to-end"
 - Event detail + category select (live slots, peso prices) → Task 3. ✓
 - Register: core... + **dynamic custom fields** + add-ons → Tasks 4–5. ✓
 - Waiver + review (inline total) → Task 5. ✓
-- Custom fields validated with `@trail-ultra/shared` (client == server) → Tasks 4–5. ✓
+- Custom fields validated with `@race-pace/shared` (client == server) → Tasks 4–5. ✓
 - Submit → pending registration via `registrations-checkout` → Task 5. ✓
 - **Deferred to Plan 4 (documented):** Pay (WebView) → Pending → Confirmed → Ticket, and `file` field type + a dedicated review screen (merged inline for MVP).
 
 **Placeholder scan:** No TBD/TODO; the register screen's Task-4 version is an explicit interim replaced in Task 5 (labeled).
 
-**Type consistency:** `EventRow`/`CategoryRow`/`AddonRow`/`FormFieldRow`, the `use*` hooks, `startCheckout`, `DynamicField`, `customDataSchema`/`formatPeso`/`RegistrationInput` (from `@trail-ultra/shared`), and route hrefs (`/event/[id]`, `/register/[categoryId]`, `/registration-created`) are used consistently across tasks.
+**Type consistency:** `EventRow`/`CategoryRow`/`AddonRow`/`FormFieldRow`, the `use*` hooks, `startCheckout`, `DynamicField`, `customDataSchema`/`formatPeso`/`RegistrationInput` (from `@race-pace/shared`), and route hrefs (`/event/[id]`, `/register/[categoryId]`, `/registration-created`) are used consistently across tasks.
 
 ---
 

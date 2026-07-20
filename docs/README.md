@@ -1,6 +1,6 @@
-# trail-ultra — planning docs
+# race-pace — planning docs
 
-Planning & design artifacts for **trail-ultra**, a multi-organization trail &
+Planning & design artifacts for **race-pace**, a multi-organization trail &
 ultra-trail event platform (Mindanao, Philippines).
 
 | Doc | What it is |
@@ -10,7 +10,7 @@ ultra-trail event platform (Mindanao, Philippines).
 | [plans/01-local-backend-foundation.md](./plans/01-local-backend-foundation.md) | **Plan 1 of 4** — local backend foundation: Supabase schema + RLS + seed + Edge Functions + fake payments, as TDD steps. |
 | [plans/02-app-foundation.md](./plans/02-app-foundation.md) | **Plan 2 of 4** — Expo app foundation: scaffold, auth, org selection, tab shell, profile, as TDD steps. |
 | [plans/03-browse-register.md](./plans/03-browse-register.md) | **Plan 3 of 4** — browse events, event detail, dynamic custom-field registration → pending registration, as TDD steps. |
-| [trail-ultra-flows.html](./trail-ultra-flows.html) | **Visual companion** — MVP scope + the runner journey, multi-tenancy isolation, payments/settlement, and roles. Open in a browser. |
+| [race-pace-flows.html](./race-pace-flows.html) | **Visual companion** — MVP scope + the runner journey, multi-tenancy isolation, payments/settlement, and roles. Open in a browser. |
 | [adr/0001-cross-platform-tech-stack.md](./adr/0001-cross-platform-tech-stack.md) | **ADR-0001** — the cross-platform tech-stack decision (Expo/RN + Supabase + PayMongo + getdesign), with options & trade-offs. |
 | [adr/0002-repository-structure.md](./adr/0002-repository-structure.md) | **ADR-0002** — one monorepo; `apps/` · `packages/` · `supabase/` · `docs/` layout, with rationale. |
 
@@ -19,7 +19,7 @@ ultra-trail event platform (Mindanao, Philippines).
 ## Roadmap of planning docs
 
 - [x] Product overview / PRD — `00-product-overview.md`
-- [x] Visual flows — `trail-ultra-flows.html`
+- [x] Visual flows — `race-pace-flows.html`
 - [x] **Architecture / tech-stack decision** — [ADR-0001 · Cross-platform tech stack](./adr/0001-cross-platform-tech-stack.md)
 - [x] **Repository structure** — [ADR-0002 · Repository & monorepo structure](./adr/0002-repository-structure.md)
 - [x] **01 · Mobile (iOS) MVP** — [detailed spec](./01-mobile-ios-mvp.md) for the first build

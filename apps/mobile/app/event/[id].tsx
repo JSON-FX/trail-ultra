@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { formatPeso } from "@trail-ultra/shared";
+import { formatPeso } from "@race-pace/shared";
 import { useEvent, useCategories } from "../../lib/events";
 import { theme } from "../../lib/theme";
 

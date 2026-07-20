@@ -7,7 +7,7 @@
 
 ## Context
 
-trail-ultra spans several code surfaces — an Expo / React Native mobile app, a
+race-pace spans several code surfaces — an Expo / React Native mobile app, a
 React + Vite web app, Supabase Edge Functions (Deno/TS), and a shared TypeScript
 package of types + Zod validators (ADR-0001) — plus planning docs (PRD, ADRs,
 flows). It's a solo, AI-assisted build optimizing for speed to MVP, and the goal
@@ -18,7 +18,7 @@ is to keep planning and development versioned together, cleanly.
 Use a **single GitHub repository — a monorepo** — managed with **pnpm workspaces**:
 
 ```
-trail-ultra/
+race-pace/
 ├── docs/            planning — PRD, ADRs, visual flows
 ├── apps/
 │   ├── mobile/      Expo (React Native) — iOS + Android
@@ -82,5 +82,5 @@ folder can be extracted into its own repo later (the easy direction).
 ## Action Items
 1. [x] Create the monorepo skeleton (`apps/`, `packages/`, `supabase/`, `docs/`) with pnpm workspaces.
 2. [ ] Scaffold `apps/mobile` (Expo) and `apps/web` (Vite); configure Expo Metro for the monorepo.
-3. [ ] `supabase init`; add an import map so Edge Functions can use `@trail-ultra/shared`.
+3. [ ] `supabase init`; add an import map so Edge Functions can use `@race-pace/shared`.
 4. [ ] Add CI (`.github/workflows`) — typecheck / lint / test across workspaces, path-filtered deploys.

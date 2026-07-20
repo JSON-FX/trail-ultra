@@ -10,4 +10,4 @@ cd apps/web
 pnpm create vite@latest . --template react-ts
 ```
 
-Shares `@trail-ultra/shared` for types + validators.
+Shares `@race-pace/shared` for types + validators.
