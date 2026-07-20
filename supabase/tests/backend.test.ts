@@ -237,3 +237,15 @@ describe("fake-checkout sandbox page", () => {
     await svc.auth.admin.deleteUser(user.id);
   });
 });
+
+describe("psgc reference data", () => {
+  it("anon can read psgc tables and a known city resolves its parents", async () => {
+    const a = anon();
+    const regions = await a.from("psgc_regions").select("code", { count: "exact", head: true });
+    expect(regions.count).toBeGreaterThan(0);
+    const city = await a.from("psgc_cities").select("code,name,province_code,region_code").eq("code", "012801000").maybeSingle();
+    expect(city.data?.region_code).toBe("010000000");         // Adams → Ilocos Region
+    const prov = await a.from("psgc_provinces").select("region_code").eq("code", city.data!.province_code!).maybeSingle();
+    expect(prov.data?.region_code).toBe("010000000");
+  });
+});
