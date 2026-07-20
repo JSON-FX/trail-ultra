@@ -21,7 +21,9 @@ export function TopBar() {
       return data?.name ?? "";
     },
   });
-  const title = TITLES[pathname] ?? "Dashboard";
+  const title = pathname === "/events/new" ? "Create event"
+    : /^\/events\/[^/]+\/edit$/.test(pathname) ? "Edit event"
+    : TITLES[pathname] ?? "Dashboard";
   const orgLabel = roles.data?.isSuperAdmin ? "Platform · Super admin" : org.data ?? "";
 
   return (
