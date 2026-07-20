@@ -1,0 +1,29 @@
+services:
+  web:
+    image: node:20-bookworm-slim
+    working_dir: /repo
+    command: sh -c "corepack enable && corepack prepare pnpm@9.7.0 --activate && pnpm install --frozen-lockfile=false && pnpm --filter web dev --host 0.0.0.0"
+    networks: [dev-net]
+    labels:
+      - "traefik.enable=true"
+      # http :80 -> https redirect
+      - "traefik.http.routers.racepace-admin-http.entrypoints=web"
+      - "traefik.http.routers.racepace-admin-http.rule=Host(`admin.racepace.lan`)"
+      - "traefik.http.routers.racepace-admin-http.middlewares=racepace-admin-redirect"
+      - "traefik.http.middlewares.racepace-admin-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.racepace-admin-redirect.redirectscheme.permanent=true"
+      # https :443 (Traefik's default mkcert *.lan cert)
+      - "traefik.http.routers.racepace-admin.entrypoints=websecure"
+      - "traefik.http.routers.racepace-admin.rule=Host(`admin.racepace.lan`)"
+      - "traefik.http.routers.racepace-admin.tls=true"
+      - "traefik.http.services.racepace-admin.loadbalancer.server.port=5173"
+    volumes:
+      - ./:/repo
+      - repo_node_modules:/repo/node_modules
+      - web_node_modules:/repo/apps/web/node_modules
+networks:
+  dev-net:
+    external: true
+volumes:
+  repo_node_modules:
+  web_node_modules:

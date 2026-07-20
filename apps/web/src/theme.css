@@ -1,0 +1,13 @@
+:root {
+  --primary: #159A55; --primary-focus: #0F7A42; --forest: #0F2A20;
+  --ink: #1D1D1F; --ink-muted: #7A7A7A; --ink-subtle: #8A8A8E;
+  --canvas: #ffffff; --parchment: #F5F5F7; --hairline: #E0E0E0; --divider: #EFEFF1;
+  --danger: #FF3B30; --amber: #B45309; --info: #0066CC;
+  --radius: 11px; --radius-pill: 9999px;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink); background: var(--parchment);
+}

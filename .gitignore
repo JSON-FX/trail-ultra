@@ -2,6 +2,7 @@
 node_modules/
 .pnp.*
 .yarn/*
+.pnpm-store/
 
 # Env & secrets
 .env
