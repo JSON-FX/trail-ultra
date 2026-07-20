@@ -9,7 +9,8 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-video"
     ],
     "ios": {
       "supportsTablet": true
