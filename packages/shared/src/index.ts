@@ -82,3 +82,17 @@ export interface TicketPayload {
   eid: string; // event id
   iat: number; // issued-at (unix seconds)
 }
+
+/** Standardized PH address (denormalized labels ride on events/profiles). */
+export type PsgcAddress = {
+  city_psgc_code: string | null;
+  city_name: string | null;
+  province_name: string | null;
+  region_name: string | null;
+};
+
+/** "Digos City, Davao del Sur" — null province → just the city; null city → "". */
+export function formatAddress(a: Pick<PsgcAddress, "city_name" | "province_name">): string {
+  if (!a.city_name) return "";
+  return a.province_name ? `${a.city_name}, ${a.province_name}` : a.city_name;
+}

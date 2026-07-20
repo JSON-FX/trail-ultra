@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  customDataSchema, formatPeso, registrationInputSchema, type FormField,
+  customDataSchema, formatPeso, formatAddress, registrationInputSchema, type FormField,
   PROFILE_KEYS, isProfileKey, BLOOD_TYPES, SHIRT_SIZES, GENDERS,
 } from "./index";
 
@@ -61,5 +61,13 @@ describe("customDataSchema ignores non-declared keys (passport snapshot survives
     // A passport snapshot rides along in custom_data; non-strict schema must accept it.
     expect(customDataSchema(fields).safeParse(
       { running_club: "Trailblazers", bib_name: "JR", blood_type: "O+" }).success).toBe(true);
+  });
+});
+
+describe("formatAddress", () => {
+  it("City, Province; null province → City; null city → ''", () => {
+    expect(formatAddress({ city_name: "Digos City", province_name: "Davao del Sur" })).toBe("Digos City, Davao del Sur");
+    expect(formatAddress({ city_name: "City of Manila", province_name: null })).toBe("City of Manila");
+    expect(formatAddress({ city_name: null, province_name: "X" })).toBe("");
   });
 });
