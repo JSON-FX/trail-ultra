@@ -68,3 +68,34 @@ insert into form_fields (id, org_id, event_id, key, label, type, required, optio
   ('00000000-0000-0000-0000-0000000000f1','00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-0000000000e1','blood_type','Blood type','select',true, array['A','B','AB','O'],1),
   ('00000000-0000-0000-0000-0000000000f2','00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-0000000000e1','running_club','Running club','text',false,null,2),
   ('00000000-0000-0000-0000-0000000000f3','00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-0000000000e1','shirt_size','Shirt size','select',true, array['S','M','L','XL'],3);
+
+-- Provisioned admin for the web console (survives db reset). Password: password123
+-- crypt()/gen_salt() come from pgcrypto (installed in Supabase local). If they error,
+-- prefix with extensions. (i.e. extensions.crypt / extensions.gen_salt).
+do $$
+declare admin_id uuid := '00000000-0000-0000-0000-0000000000b1';
+begin
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, created_at, updated_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, recovery_token, email_change_token_new, email_change
+  ) values (
+    '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated',
+    'admin@runwithpoint.test', crypt('password123', gen_salt('bf')),
+    now(), now(), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
+    '', '', '', ''
+  );
+
+  insert into auth.identities (
+    id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+  ) values (
+    gen_random_uuid(), admin_id, admin_id::text,
+    jsonb_build_object('sub', admin_id::text, 'email', 'admin@runwithpoint.test', 'email_verified', true),
+    'email', now(), now(), now()
+  );
+
+  insert into user_roles (user_id, role, org_id)
+  values (admin_id, 'admin', '00000000-0000-0000-0000-0000000000a1');
+end $$;

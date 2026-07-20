@@ -117,3 +117,15 @@ describe("admin draft-event read", () => {
     await svc.from("events").delete().eq("id", draft.data!.id);
   });
 });
+
+describe("seeded admin", () => {
+  it("admin@runwithpoint.test signs in and holds admin on Run With Point", async () => {
+    const signedIn = await anon().auth.signInWithPassword({
+      email: "admin@runwithpoint.test", password: "password123",
+    });
+    expect(signedIn.error).toBeNull();
+    const token = signedIn.data.session!.access_token;
+    const { data } = await authed(token).from("user_roles").select("role, org_id");
+    expect(data).toEqual([{ role: "admin", org_id: RWP }]);
+  });
+});
