@@ -11,6 +11,7 @@ export type EventRow = {
 export type OrgRow = {
   id: string; name: string; slug: string;
   logo_url: string | null; banner_url: string | null; description: string | null; brand_color: string | null;
+  event_count?: number;
 };
 export type CategoryRow = {
   id: string; event_id: string; org_id: string; code: string; label: string;
@@ -61,9 +62,9 @@ export function useEvent(eventId: string) {
 }
 
 export async function fetchOrgs(): Promise<OrgRow[]> {
-  const { data, error } = await supabase.from("organizations").select(ORG_COLS).order("name");
+  const { data, error } = await supabase.from("organizations").select(`${ORG_COLS},events(count)`).order("name");
   if (error) throw error;
-  return (data ?? []) as OrgRow[];
+  return (data ?? []).map((r: any) => ({ ...r, event_count: Array.isArray(r.events) ? (r.events[0]?.count ?? 0) : 0 }));
 }
 export function useOrgs() {
   return useQuery({ queryKey: ["orgs"], queryFn: fetchOrgs });
