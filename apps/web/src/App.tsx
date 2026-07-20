@@ -1,15 +1,19 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import type { PropsWithChildren } from "react";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./lib/auth";
+import { useMyRoles } from "./lib/roles";
+import { AppShell } from "./components/AppShell";
 import { Login } from "./routes/Login";
 import { NoAccess } from "./routes/NoAccess";
 import { Placeholder } from "./routes/Placeholder";
 
-function RequireAdmin({ children }: PropsWithChildren) {
+function RequireAdmin() {
   const { session, loading } = useAuth();
+  const roles = useMyRoles();
   if (loading) return <div style={{ padding: 32 }}>Loading…</div>;
   if (!session) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  if (roles.isLoading) return <div style={{ padding: 32 }}>Loading…</div>;
+  if (!roles.data?.isAdmin) return <Navigate to="/no-access" replace />;
+  return <Outlet />;
 }
 
 export function App() {
@@ -18,7 +22,20 @@ export function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/no-access" element={<NoAccess />} />
-        <Route path="/" element={<RequireAdmin><Placeholder title="Race Pace Admin" /></RequireAdmin>} />
+        <Route element={<RequireAdmin />}>
+          <Route element={<AppShell />}>
+            <Route index element={<Navigate to="/events" replace />} />
+            <Route path="events" element={<Placeholder title="Events" />} />
+            <Route path="dashboard" element={<Placeholder title="Dashboard" />} />
+            <Route path="registrations" element={<Placeholder title="Registrations" />} />
+            <Route path="payments" element={<Placeholder title="Payments" />} />
+            <Route path="check-in" element={<Placeholder title="Check-in" />} />
+            <Route path="settings" element={<Placeholder title="Settings" />} />
+            <Route path="organizations" element={<Placeholder title="Organizations" />} />
+            <Route path="commission" element={<Placeholder title="Commission" />} />
+            <Route path="payouts" element={<Placeholder title="Payouts" />} />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );
