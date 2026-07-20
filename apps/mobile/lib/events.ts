@@ -2,8 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "./supabase";
 
 export type EventRow = {
-  id: string; name: string; place: string | null; region: string | null;
-  event_date: string | null; elevation_gain_m: number | null; cutoff_hours: number | null; status: string;
+  id: string; org_id: string; name: string; place: string | null; region: string | null;
+  event_date: string | null; elevation_gain_m: number | null; cutoff_hours: number | null;
+  status: string; hero_image_url: string | null; description: string | null;
+  gallery: string[]; original_date: string | null; status_note: string | null;
+  org_name?: string; org_color?: string | null;
+};
+export type OrgRow = {
+  id: string; name: string; slug: string;
+  logo_url: string | null; banner_url: string | null; description: string | null; brand_color: string | null;
 };
 export type CategoryRow = {
   id: string; event_id: string; org_id: string; code: string; label: string;
@@ -16,25 +23,59 @@ export type FormFieldRow = {
   required: boolean; options: string[] | null; sort_order: number;
 };
 
-const EVENT_COLS = "id,name,place,region,event_date,elevation_gain_m,cutoff_hours,status";
+const EVENT_COLS =
+  "id,org_id,name,place,region,event_date,elevation_gain_m,cutoff_hours,status,hero_image_url,description,gallery,original_date,status_note";
+const ORG_COLS = "id,name,slug,logo_url,banner_url,description,brand_color";
 const CAT_COLS = "id,event_id,org_id,code,label,distance_km,base_price,slots_total,slots_taken";
 
-export async function fetchEvents(orgId: string): Promise<EventRow[]> {
+function mapEvent(r: any): EventRow {
+  return { ...r, gallery: r.gallery ?? [], org_name: r.organizations?.name, org_color: r.organizations?.brand_color };
+}
+
+// Marketplace: every org's non-draft events (RLS enforces non-draft), with org name + color for the card.
+export async function fetchMarketplaceEvents(): Promise<EventRow[]> {
+  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color)`).order("event_date");
+  if (error) throw error;
+  return (data ?? []).map(mapEvent);
+}
+export function useMarketplaceEvents() {
+  return useQuery({ queryKey: ["marketplace-events"], queryFn: fetchMarketplaceEvents });
+}
+
+export async function fetchEventsByOrg(orgId: string): Promise<EventRow[]> {
   const { data, error } = await supabase.from("events").select(EVENT_COLS).eq("org_id", orgId).order("event_date");
   if (error) throw error;
-  return (data ?? []) as EventRow[];
+  return (data ?? []).map(mapEvent);
 }
-export function useEvents(orgId: string | null) {
-  return useQuery({ queryKey: ["events", orgId], queryFn: () => fetchEvents(orgId!), enabled: !!orgId });
+export function useEventsByOrg(orgId: string) {
+  return useQuery({ queryKey: ["events-by-org", orgId], queryFn: () => fetchEventsByOrg(orgId), enabled: !!orgId });
 }
 
 export async function fetchEvent(eventId: string): Promise<EventRow | null> {
-  const { data, error } = await supabase.from("events").select(EVENT_COLS).eq("id", eventId).maybeSingle();
+  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color)`).eq("id", eventId).maybeSingle();
   if (error) throw error;
-  return data as EventRow | null;
+  return data ? mapEvent(data) : null;
 }
 export function useEvent(eventId: string) {
   return useQuery({ queryKey: ["event", eventId], queryFn: () => fetchEvent(eventId) });
+}
+
+export async function fetchOrgs(): Promise<OrgRow[]> {
+  const { data, error } = await supabase.from("organizations").select(ORG_COLS).order("name");
+  if (error) throw error;
+  return (data ?? []) as OrgRow[];
+}
+export function useOrgs() {
+  return useQuery({ queryKey: ["orgs"], queryFn: fetchOrgs });
+}
+
+export async function fetchOrg(id: string): Promise<OrgRow | null> {
+  const { data, error } = await supabase.from("organizations").select(ORG_COLS).eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data as OrgRow | null;
+}
+export function useOrg(id: string) {
+  return useQuery({ queryKey: ["org", id], queryFn: () => fetchOrg(id), enabled: !!id });
 }
 
 export async function fetchCategories(eventId: string): Promise<CategoryRow[]> {
