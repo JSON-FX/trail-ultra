@@ -26,3 +26,30 @@ export function useOrgEvents(orgId?: string) {
     },
   });
 }
+
+export type EditorEvent = {
+  id: string; org_id: string; name: string; place: string | null; region: string | null;
+  event_date: string | null; flag_off: string | null; status: string;
+  elevation_gain_m: number | null; cutoff_hours: number | null; description: string | null; hero_image_url: string | null;
+};
+export type EditorCategory = { id: string; code: string; label: string; distance_km: number | null; base_price: number; slots_total: number; slots_taken: number };
+export type EditorAddon = { id: string; name: string; price: number };
+export type EditorData = { event: EditorEvent; categories: EditorCategory[]; addons: EditorAddon[] };
+
+export function useEventForEditor(id?: string) {
+  return useQuery<EditorData | null>({
+    queryKey: ["event-editor", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const ev = await supabase.from("events")
+        .select("id,org_id,name,place,region,event_date,flag_off,status,elevation_gain_m,cutoff_hours,description,hero_image_url")
+        .eq("id", id!).single();
+      if (ev.error) throw ev.error;
+      const cats = await supabase.from("categories").select("id,code,label,distance_km,base_price,slots_total,slots_taken").eq("event_id", id!).order("base_price", { ascending: false });
+      if (cats.error) throw cats.error;
+      const adds = await supabase.from("addons").select("id,name,price").eq("event_id", id!).order("created_at");
+      if (adds.error) throw adds.error;
+      return { event: ev.data as EditorEvent, categories: (cats.data ?? []) as EditorCategory[], addons: (adds.data ?? []) as EditorAddon[] };
+    },
+  });
+}
