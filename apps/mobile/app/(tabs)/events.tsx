@@ -16,7 +16,7 @@ export default function Marketplace() {
     const list = data ?? [];
     const needle = q.trim().toLowerCase();
     if (!needle) return list;
-    return list.filter((e) => [e.name, e.place, e.region, e.org_name].filter(Boolean).some((s) => s!.toLowerCase().includes(needle)));
+    return list.filter((e) => [e.name, e.place, e.region, e.city_name, e.province_name, e.region_name, e.org_name].filter(Boolean).some((s) => s!.toLowerCase().includes(needle)));
   }, [data, q]);
 
   if (isLoading) return <View style={styles.center}><ActivityIndicator color={theme.primary} /></View>;
