@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { customDataSchema, formatPeso, registrationInputSchema, type FormField } from "./index";
+import {
+  customDataSchema, formatPeso, registrationInputSchema, type FormField,
+  PROFILE_KEYS, isProfileKey, BLOOD_TYPES, SHIRT_SIZES, GENDERS,
+} from "./index";
 
 describe("customDataSchema", () => {
   const fields: FormField[] = [
@@ -30,5 +33,33 @@ describe("registrationInputSchema", () => {
       idempotency_key: "",
     });
     expect(bad.success).toBe(false);
+  });
+});
+
+describe("profile vocabulary", () => {
+  it("isProfileKey recognizes passport keys and rejects event keys", () => {
+    expect(isProfileKey("blood_type")).toBe(true);
+    expect(isProfileKey("shirt_size")).toBe(true);
+    expect(isProfileKey("running_club")).toBe(false);
+    expect(isProfileKey("bus_pickup_point")).toBe(false);
+  });
+  it("PROFILE_KEYS is the agreed set", () => {
+    expect([...PROFILE_KEYS].sort()).toEqual(
+      ["bib_name","blood_type","date_of_birth","emergency_contact","gender","shirt_size"]);
+  });
+  it("option lists are plain ASCII", () => {
+    expect(BLOOD_TYPES).toContain("O-");
+    expect(SHIRT_SIZES).toContain("XL");
+    expect(GENDERS).toContain("Prefer not to say");
+    expect(BLOOD_TYPES.join("")).not.toMatch(/[−–]/); // no unicode minus/en-dash
+  });
+});
+
+describe("customDataSchema ignores non-declared keys (passport snapshot survives)", () => {
+  it("validates event fields and leaves extra snapshot keys untouched", () => {
+    const fields: FormField[] = [{ key: "running_club", label: "Club", type: "text", required: false }];
+    // A passport snapshot rides along in custom_data; non-strict schema must accept it.
+    expect(customDataSchema(fields).safeParse(
+      { running_club: "Trailblazers", bib_name: "JR", blood_type: "O+" }).success).toBe(true);
   });
 });

@@ -32,6 +32,16 @@ export const formFieldSchema = z.object({
 });
 export type FormField = z.infer<typeof formFieldSchema>;
 
+/** Profile-owned attributes: prefill into registration + save back (Model B bridge). */
+export const PROFILE_KEYS = ["bib_name","date_of_birth","gender","shirt_size","blood_type","emergency_contact"] as const;
+export type ProfileKey = (typeof PROFILE_KEYS)[number];
+export const isProfileKey = (k: string): k is ProfileKey => (PROFILE_KEYS as readonly string[]).includes(k);
+
+/** Canonical option lists reused by Profile + Register selects. Store plain ASCII. */
+export const BLOOD_TYPES = ["A+","A-","B+","B-","O+","O-","AB+","AB-","Unknown"] as const;
+export const SHIRT_SIZES = ["XS","S","M","L","XL","XXL"] as const;
+export const GENDERS     = ["Male","Female","Non-binary","Prefer not to say"] as const;
+
 /**
  * Build a Zod validator for a registration's `custom_data` from an org's field
  * definitions, so mobile, web, and the Edge Function all enforce the same rules.
