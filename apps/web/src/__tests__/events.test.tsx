@@ -31,8 +31,7 @@ it("shows the error state and retries on click", () => {
   const refetchSpy = vi.fn();
   mockQuery = { isLoading: false, isError: true, refetch: refetchSpy, data: undefined };
   render(<Events />);
-  const retry = screen.getByText("Couldn't load events. Retry.");
-  expect(retry).toBeInTheDocument();
-  fireEvent.click(retry);
+  expect(screen.getByText("Couldn't load events.")).toBeInTheDocument();
+  fireEvent.click(screen.getByText("Retry"));
   expect(refetchSpy).toHaveBeenCalled();
 });

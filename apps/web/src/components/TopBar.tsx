@@ -1,10 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../lib/auth";
 import { useMyRoles } from "../lib/roles";
 
+const TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard", "/events": "Events", "/registrations": "Registrations",
+  "/payments": "Payments", "/check-in": "Race-day check-in", "/settings": "Settings",
+  "/organizations": "Organizations", "/commission": "Commission", "/payouts": "Payout statements",
+};
+
 export function TopBar() {
-  const { signOut } = useAuth();
+  const { pathname } = useLocation();
   const roles = useMyRoles();
   const orgId = roles.data?.orgId;
   const org = useQuery({
@@ -15,10 +21,17 @@ export function TopBar() {
       return data?.name ?? "";
     },
   });
+  const title = TITLES[pathname] ?? "Dashboard";
+  const orgLabel = roles.data?.isSuperAdmin ? "Platform · Super admin" : org.data ?? "";
+
   return (
-    <header style={{ height: 56, borderBottom: "1px solid var(--hairline)", background: "var(--canvas)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px" }}>
-      <span style={{ fontWeight: 600 }}>{roles.data?.isSuperAdmin ? "Platform" : org.data ?? ""}</span>
-      <button onClick={() => signOut()} style={{ border: "1px solid var(--hairline)", background: "var(--canvas)", borderRadius: "var(--radius-pill)", padding: "6px 14px", cursor: "pointer" }}>Sign out</button>
+    <header style={{ height: 66, flex: "none", background: "var(--canvas)", borderBottom: "1px solid var(--hairline)", display: "flex", alignItems: "center", padding: "0 30px", gap: 18 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.3px" }}>{title}</div>
+      {orgLabel ? (
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: "var(--parchment)", borderRadius: 9, padding: "7px 13px", fontSize: 13, fontWeight: 600 }}>
+          {orgLabel}
+        </div>
+      ) : null}
     </header>
   );
 }

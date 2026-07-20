@@ -4,6 +4,7 @@ import { supabase } from "./supabase";
 export type AdminEventRow = {
   id: string;
   name: string;
+  place: string | null;
   event_date: string | null;
   status: string;
   original_date: string | null;
@@ -17,7 +18,7 @@ export function useOrgEvents(orgId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("id,name,event_date,status,original_date,categories(slots_taken,slots_total)")
+        .select("id,name,place,event_date,status,original_date,categories(slots_taken,slots_total)")
         .eq("org_id", orgId!)
         .order("event_date", { ascending: true });
       if (error) throw error;
