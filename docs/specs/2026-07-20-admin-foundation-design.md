@@ -82,7 +82,7 @@ create table user_roles (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users(id) on delete cascade,
   role        app_role not null,
-  org_id      uuid references orgs(id) on delete cascade,     -- null = platform-wide (super_admin)
+  org_id      uuid references organizations(id) on delete cascade,  -- null = platform-wide (super_admin)
   event_scope uuid references events(id) on delete cascade,   -- optional per-event narrowing (marshal)
   created_at  timestamptz not null default now(),
   unique (user_id, role, org_id, event_scope)
@@ -151,7 +151,7 @@ routes/NoAccess.tsx      signed in but lacks an admin/editor/super_admin role
 - **Org admin:** Dashboard · Events · Registrations · Payments · Check-in · Settings.
 - **super_admin:** the above **plus** Organizations · Commission · Payouts.
 - In this slice only **Events** routes to a real screen; every other item renders `Placeholder` ("Coming soon"). Active-item tint = Action accent from tokens.
-- **TopBar:** the admin's org name (from `orgs` by `orgId`) + a user menu with **Sign out**.
+- **TopBar:** the admin's org name (from `organizations` by `orgId`) + a user menu with **Sign out**.
 
 ## 6. Events list — the first screen
 
