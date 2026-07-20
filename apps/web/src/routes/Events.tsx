@@ -40,7 +40,22 @@ export function Events() {
               <tr key={e.id} style={{ borderTop: "1px solid var(--divider)" }}>
                 <td style={td}>{e.name}</td>
                 <td style={td}>{fmtDate(e.event_date)}{e.original_date ? <span style={{ color: "var(--info)", fontSize: 12 }}> · was {fmtDate(e.original_date)}</span> : null}</td>
-                <td style={{ ...td, color: STATUS_COLOR[e.status] ?? "var(--ink)", textTransform: "capitalize" }}>{e.status.replace("_", " ")}</td>
+                <td style={td}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      borderRadius: "var(--radius-pill)",
+                      padding: "3px 10px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      textTransform: "capitalize",
+                      color: STATUS_COLOR[e.status] ?? "var(--ink)",
+                      background: "var(--parchment)",
+                    }}
+                  >
+                    {e.status.replace(/_/g, " ")}
+                  </span>
+                </td>
                 <td style={td}>{e.categories.length}</td>
                 <td style={td}>{fill(e.categories)}</td>
               </tr>

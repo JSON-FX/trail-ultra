@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Events } from "../routes/Events";
 
 vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1" } }) }));
@@ -25,4 +25,14 @@ it("shows the loading state", () => {
   mockQuery = { isLoading: true, isError: false, refetch: () => {}, data: undefined };
   render(<Events />);
   expect(screen.getByText("Loading events…")).toBeInTheDocument();
+});
+
+it("shows the error state and retries on click", () => {
+  const refetchSpy = vi.fn();
+  mockQuery = { isLoading: false, isError: true, refetch: refetchSpy, data: undefined };
+  render(<Events />);
+  const retry = screen.getByText("Couldn't load events. Retry.");
+  expect(retry).toBeInTheDocument();
+  fireEvent.click(retry);
+  expect(refetchSpy).toHaveBeenCalled();
 });
