@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { customDataSchema, formatPeso, isProfileKey, BLOOD_TYPES, SHIRT_SIZES, GENDERS, type FormField } from "@race-pace/shared";
 import { useCategory, useFormFields, useAddons } from "../../lib/events";
 import { startCheckout } from "../../lib/registration";
-import { getProfile } from "../../lib/profile";
+import { getProfile, upsertProfile, type Profile } from "../../lib/profile";
 import { useAuth } from "../../lib/auth";
 import { DynamicField } from "../../components/DynamicField";
 import { PillSelect } from "../../components/PillSelect";
@@ -34,6 +34,9 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [idempotencyKey] = useState(() => `${categoryId}:${Date.now()}`);
+  const [loadedProfile, setLoadedProfile] = useState<Profile | null>(null);
+  const [saveBack, setSaveBack] = useState(false);
+  const [saveBackTouched, setSaveBackTouched] = useState(false);
 
   // Prefill the core fields from the runner's global profile.
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function Register() {
       if (p) {
         setBibName(p.bib_name ?? ""); setDob(p.date_of_birth ?? ""); setGender(p.gender ?? "");
         setShirtSize(p.shirt_size ?? ""); setBloodType(p.blood_type ?? ""); setEmergency(p.emergency_contact ?? "");
+        setLoadedProfile(p);
       }
     });
   }, [session?.user.id]);
@@ -50,6 +54,19 @@ export default function Register() {
     const addonTotal = (addons.data ?? []).filter((a) => selectedAddons[a.id]).reduce((s, a) => s + a.price, 0);
     return base + addonTotal;
   }, [cat.data, addons.data, selectedAddons]);
+
+  // Passport diff + save-back default must run every render (hooks can't follow the loading-gate
+  // return below, or the hook count changes once `cat`/`fields` finish loading and React throws).
+  const passportPairs: [keyof Profile, string][] = [
+    ["bib_name", bibName], ["date_of_birth", dob], ["gender", gender],
+    ["shirt_size", shirtSize], ["blood_type", bloodType], ["emergency_contact", emergency],
+  ];
+  const prof = (k: keyof Profile) => (loadedProfile?.[k] as string | null) ?? "";
+  const filledFromEmpty = passportPairs.some(([k, v]) => !prof(k) && v.trim() !== "");
+  const editedExisting = passportPairs.some(([k, v]) => prof(k) !== "" && v.trim() !== "" && v !== prof(k));
+  const showSaveBack = filledFromEmpty || editedExisting;
+
+  useEffect(() => { if (!saveBackTouched) setSaveBack(filledFromEmpty); }, [filledFromEmpty, saveBackTouched]);
 
   if (cat.isLoading || (eventId && fields.isLoading)) return <View style={styles.center}><ActivityIndicator color={theme.primary} /></View>;
 
@@ -71,6 +88,11 @@ export default function Register() {
     if (!waiver) { setError("You must accept the waiver."); return; }
     setError(null); setBusy(true);
     try {
+      if (saveBack && session?.user.id) {
+        try {
+          await upsertProfile({ id: session.user.id, bib_name: bibName, date_of_birth: dob || null, gender: gender || null, shirt_size: shirtSize || null, blood_type: bloodType || null, emergency_contact: emergency || null });
+        } catch (e) { console.warn("profile save-back failed", e); }
+      }
       const res = await startCheckout({
         event_id: eventId, category_id: categoryId,
         addon_ids: Object.keys(selectedAddons).filter((id) => selectedAddons[id]),
@@ -117,6 +139,14 @@ export default function Register() {
             </Pressable>
           );
         })}
+
+        {showSaveBack && (
+          <Pressable style={styles.toggleRow} onPress={() => { setSaveBackTouched(true); setSaveBack((v) => !v); }}
+            accessibilityRole="switch" accessibilityState={{ checked: saveBack }} accessibilityLabel="Save details to profile">
+            <Text style={styles.toggleText}>Save these details to my profile?</Text>
+            <View style={[styles.track, saveBack && styles.trackOn]}><View style={[styles.knob, saveBack && styles.knobOn]} /></View>
+          </Pressable>
+        )}
 
         <Pressable style={styles.waiver} onPress={() => setWaiver((v) => !v)} accessibilityRole="button" accessibilityLabel="Accept waiver">
           <Text style={styles.waiverText}>I accept the event <Text style={{ color: theme.primary, fontWeight: "600" }}>waiver</Text> and confirm I'm medically fit.</Text>
