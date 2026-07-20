@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { View, Text, TextInput, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useOrgs } from "../../lib/events";
 import { OrgAvatar } from "../../components/OrgAvatar";
 import { theme } from "../../lib/theme";
@@ -9,7 +8,6 @@ import { theme } from "../../lib/theme";
 export default function Orgs() {
   const { data, isLoading, isError, refetch } = useOrgs();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [q, setQ] = useState("");
 
   const rows = useMemo(() => {
@@ -28,7 +26,7 @@ export default function Orgs() {
       style={styles.list}
       data={rows}
       keyExtractor={(o) => o.id}
-      contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: 32 }}
+      contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={

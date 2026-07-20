@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { View, Text, TextInput, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMarketplaceEvents } from "../../lib/events";
 import { EventCard } from "../../components/EventCard";
 import { theme } from "../../lib/theme";
@@ -9,7 +8,6 @@ import { theme } from "../../lib/theme";
 export default function Marketplace() {
   const { data, isLoading, isError, refetch } = useMarketplaceEvents();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [q, setQ] = useState("");
 
   const rows = useMemo(() => {
@@ -29,7 +27,7 @@ export default function Marketplace() {
       style={styles.list}
       data={rows}
       keyExtractor={(e) => e.id}
-      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: insets.top + 6, paddingBottom: 32 }}
+      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 8, paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={

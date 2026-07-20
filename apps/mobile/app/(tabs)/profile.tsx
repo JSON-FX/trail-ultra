@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../lib/auth";
 import { getProfile, upsertProfile } from "../../lib/profile";
 import { initials } from "../../components/OrgAvatar";
@@ -15,7 +14,6 @@ const MENU = ["Payment methods", "Notifications", "Help & support"];
 export default function Profile() {
   const { session, signOut } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const uid = session?.user.id;
   const [fullName, setFullName] = useState("");
   const [bibName, setBibName] = useState("");
@@ -56,7 +54,7 @@ export default function Profile() {
   const name = fullName || session?.user.email || "Runner";
 
   return (
-    <ScrollView style={styles.c} contentContainerStyle={{ paddingTop: insets.top + 10, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.c} contentContainerStyle={{ paddingTop: 10, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
       <View style={styles.head}>
         <View style={styles.avatar}><Text style={styles.avatarT}>{initials(name)}</Text></View>
         <Text style={styles.name}>{name}</Text>

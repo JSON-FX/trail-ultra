@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMyRegistrations } from "../../lib/registration";
 import { cacheMyRaces, getCachedMyRaces, type CachedTicket } from "../../lib/ticketCache";
 import { shortDate } from "../../lib/format";
@@ -12,7 +11,6 @@ type Row = { id: string; eventName: string; categoryLabel: string; km: number | 
 export default function MyRaces() {
   const { data, isLoading, isError, refetch } = useMyRegistrations();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [cached, setCached] = useState<CachedTicket[] | null>(null);
 
   useEffect(() => { getCachedMyRaces().then(setCached).catch(() => setCached([])); }, []);
@@ -40,7 +38,7 @@ export default function MyRaces() {
       style={styles.list}
       data={rows}
       keyExtractor={(r) => r.id}
-      contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: 32 }}
+      contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={<Text style={styles.h}>My Races</Text>}
       ListEmptyComponent={
