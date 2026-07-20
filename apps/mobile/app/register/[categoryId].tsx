@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { customDataSchema, formatPeso, type FormField } from "@race-pace/shared";
+import { customDataSchema, formatPeso, isProfileKey, BLOOD_TYPES, SHIRT_SIZES, GENDERS, type FormField } from "@race-pace/shared";
 import { useCategory, useFormFields, useAddons } from "../../lib/events";
 import { startCheckout } from "../../lib/registration";
 import { getProfile } from "../../lib/profile";
 import { useAuth } from "../../lib/auth";
 import { DynamicField } from "../../components/DynamicField";
+import { PillSelect } from "../../components/PillSelect";
 import { theme } from "../../lib/theme";
 
 export default function Register() {
@@ -23,6 +24,9 @@ export default function Register() {
   const [bibName, setBibName] = useState("");
   const [dob, setDob] = useState("");
   const [emergency, setEmergency] = useState("");
+  const [gender, setGender] = useState("");
+  const [shirtSize, setShirtSize] = useState("");
+  const [bloodType, setBloodType] = useState("");
   const [firstUltra, setFirstUltra] = useState(false);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [selectedAddons, setSelectedAddons] = useState<Record<string, boolean>>({});
@@ -34,7 +38,10 @@ export default function Register() {
   // Prefill the core fields from the runner's global profile.
   useEffect(() => {
     if (session?.user.id) getProfile(session.user.id).then((p) => {
-      if (p) { setBibName(p.bib_name ?? ""); setEmergency(p.emergency_contact ?? ""); }
+      if (p) {
+        setBibName(p.bib_name ?? ""); setDob(p.date_of_birth ?? ""); setGender(p.gender ?? "");
+        setShirtSize(p.shirt_size ?? ""); setBloodType(p.blood_type ?? ""); setEmergency(p.emergency_contact ?? "");
+      }
     });
   }, [session?.user.id]);
 
@@ -47,19 +54,27 @@ export default function Register() {
   if (cat.isLoading || (eventId && fields.isLoading)) return <View style={styles.center}><ActivityIndicator color={theme.primary} /></View>;
 
   const fieldRows = fields.data ?? [];
-  const asFormFields: FormField[] = fieldRows.map((f) => ({ key: f.key, label: f.label, type: f.type, required: f.required, options: f.options ?? undefined }));
+  const eventQuestions = fieldRows.filter((f) => !isProfileKey(f.key));
+  const requested = new Set(fieldRows.filter((f) => isProfileKey(f.key)).map((f) => f.key));
+  const eventFields: FormField[] = eventQuestions.map((f) => ({ key: f.key, label: f.label, type: f.type, required: f.required, options: f.options ?? undefined }));
 
   async function submit() {
-    const parsed = customDataSchema(asFormFields).safeParse(values);
+    const parsed = customDataSchema(eventFields).safeParse(values);
     if (!parsed.success) { setError("Please complete the required fields correctly."); return; }
+    const passport: Record<string, string> = { bib_name: bibName, date_of_birth: dob, gender, shirt_size: shirtSize, blood_type: bloodType, emergency_contact: emergency };
+    for (const f of fieldRows) {
+      if (isProfileKey(f.key) && f.required && !passport[f.key]?.trim()) { setError(`${f.label} is required.`); return; }
+    }
+    if (!bibName.trim()) { setError("Bib name is required."); return; }
     if (!emergency.trim()) { setError("Emergency contact is required."); return; }
+    if (dob && !/^\d{4}-\d{2}-\d{2}$/.test(dob)) { setError("Date of birth must be YYYY-MM-DD."); return; }
     if (!waiver) { setError("You must accept the waiver."); return; }
     setError(null); setBusy(true);
     try {
       const res = await startCheckout({
         event_id: eventId, category_id: categoryId,
         addon_ids: Object.keys(selectedAddons).filter((id) => selectedAddons[id]),
-        custom_data: { bib_name: bibName, date_of_birth: dob, emergency_contact: emergency, first_ultra: firstUltra, ...values },
+        custom_data: { bib_name: bibName, date_of_birth: dob, gender, shirt_size: shirtSize, blood_type: bloodType, emergency_contact: emergency, first_ultra: firstUltra, ...values },
         waiver_accepted: true, idempotency_key: idempotencyKey,
       });
       router.replace({ pathname: "/pay/[registrationId]", params: { registrationId: res.registration_id, checkoutUrl: res.checkout_url } });
@@ -80,12 +95,15 @@ export default function Register() {
           <Text style={[styles.label, { color: theme.danger }]}>EMERGENCY CONTACT · required</Text>
           <TextInput style={[styles.input, error && !emergency.trim() ? styles.inputErr : null]} value={emergency} onChangeText={setEmergency} placeholder="Name & mobile number" placeholderTextColor={theme.inkFaint} accessibilityLabel="Emergency contact" />
         </View>
+        {requested.has("gender") && <PillSelect label="GENDER" value={gender} options={GENDERS} onChange={setGender} />}
+        {requested.has("shirt_size") && <PillSelect label="SHIRT SIZE" value={shirtSize} options={SHIRT_SIZES} onChange={setShirtSize} />}
+        {requested.has("blood_type") && <PillSelect label="BLOOD TYPE" value={bloodType} options={BLOOD_TYPES} onChange={setBloodType} />}
         <Pressable style={styles.toggleRow} onPress={() => setFirstUltra((v) => !v)} accessibilityRole="button" accessibilityLabel="First ultra at this distance">
           <Text style={styles.toggleText}>First ultra at this distance?</Text>
           <View style={[styles.track, firstUltra && styles.trackOn]}><View style={[styles.knob, firstUltra && styles.knobOn]} /></View>
         </Pressable>
 
-        {fieldRows.map((f) => (
+        {eventQuestions.map((f) => (
           <DynamicField key={f.id} field={f} value={values[f.key]} onChange={(v) => setValues((s) => ({ ...s, [f.key]: v }))} />
         ))}
 
