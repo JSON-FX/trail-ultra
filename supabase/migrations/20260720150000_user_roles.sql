@@ -37,3 +37,12 @@ $$;
 -- still restricts rows to the caller; anon simply matches no rows.
 grant select on user_roles to anon, authenticated;
 grant all on user_roles to service_role;
+
+-- Additive: org admins/editors (and super_admins) read ALL their org's events +
+-- categories, INCLUDING draft. RLS policies are OR'd, so the public
+-- events_read_published / categories_read_published still apply for everyone else.
+create policy "events_read_org_admin" on events for select
+  using (auth_can_admin_org(org_id));
+
+create policy "categories_read_org_admin" on categories for select
+  using (auth_can_admin_org((select e.org_id from events e where e.id = categories.event_id)));

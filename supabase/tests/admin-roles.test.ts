@@ -85,3 +85,35 @@ describe("role helper functions", () => {
     expect(canAdminRwp.data).toBe(false);
   });
 });
+
+describe("admin draft-event read", () => {
+  it("an org admin reads their org's draft event; anon cannot; admin can't write", async () => {
+    const svc = service();
+    const draft = await svc.from("events")
+      .insert({ org_id: RWP, name: `Draft ${Date.now()}`, status: "draft" }).select().single();
+    const cat = await svc.from("categories")
+      .insert({ org_id: RWP, event_id: draft.data!.id, code: "21k", label: "21K", base_price: 150000, slots_total: 50 })
+      .select().single();
+
+    const admin = await makeUser(`adm_${Date.now()}@test.dev`);
+    await svc.from("user_roles").insert({ user_id: admin.id, role: "admin", org_id: RWP });
+
+    // admin sees the draft event + its categories
+    const seen = await authed(admin.token).from("events").select("id,status").eq("id", draft.data!.id);
+    expect(seen.data).toEqual([{ id: draft.data!.id, status: "draft" }]);
+    const cats = await authed(admin.token).from("categories").select("id").eq("event_id", draft.data!.id);
+    expect(cats.data).toEqual([{ id: cat.data!.id }]);
+
+    // anon cannot see the draft
+    const anonSeen = await anon().from("events").select("id").eq("id", draft.data!.id);
+    expect(anonSeen.data).toEqual([]);
+
+    // read-only: admin cannot update the event (no write policy)
+    const upd = await authed(admin.token).from("events").update({ name: "hacked" }).eq("id", draft.data!.id).select();
+    expect(upd.data ?? []).toEqual([]);
+
+    await svc.from("user_roles").delete().eq("user_id", admin.id);
+    await svc.from("categories").delete().eq("id", cat.data!.id);
+    await svc.from("events").delete().eq("id", draft.data!.id);
+  });
+});
