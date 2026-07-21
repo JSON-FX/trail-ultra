@@ -30,7 +30,8 @@ export function useOrgEvents(orgId?: string) {
 export type EditorEvent = {
   id: string; org_id: string; name: string; place: string | null; region: string | null;
   event_date: string | null; flag_off: string | null; status: string;
-  elevation_gain_m: number | null; cutoff_hours: number | null; description: string | null; hero_image_url: string | null;
+  elevation_gain_m: number | null; cutoff_hours: number | null; description: string | null;
+  hero_image_url: string | null; gallery: string[];
 };
 export type EditorCategory = { id: string; code: string; label: string; distance_km: number | null; base_price: number; slots_total: number; slots_taken: number };
 export type EditorAddon = { id: string; name: string; price: number };
@@ -42,7 +43,7 @@ export function useEventForEditor(id?: string) {
     enabled: !!id,
     queryFn: async () => {
       const ev = await supabase.from("events")
-        .select("id,org_id,name,place,region,event_date,flag_off,status,elevation_gain_m,cutoff_hours,description,hero_image_url")
+        .select("id,org_id,name,place,region,event_date,flag_off,status,elevation_gain_m,cutoff_hours,description,hero_image_url,gallery")
         .eq("id", id!).single();
       if (ev.error) throw ev.error;
       const cats = await supabase.from("categories").select("id,code,label,distance_km,base_price,slots_total,slots_taken").eq("event_id", id!).order("base_price", { ascending: false });

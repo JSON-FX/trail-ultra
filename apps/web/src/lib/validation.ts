@@ -18,6 +18,7 @@ export const eventInputSchema = z.object({
   cutoff_hours: intNonNeg.nullable(),
   description: z.string().nullable(),
   hero_image_url: z.string().nullable(),
+  gallery: z.array(z.string()).default([]),
 });
 export const categoryInputSchema = z.object({
   code: z.string().trim().min(1, "Code required"),

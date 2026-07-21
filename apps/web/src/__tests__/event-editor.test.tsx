@@ -4,6 +4,7 @@ import { EventEditor } from "../routes/EventEditor";
 import type { EditorData } from "../lib/events";
 
 vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1" } }) }));
+vi.mock("../lib/imageUpload", () => ({ uploadEventImage: vi.fn() }));
 const mockUseEventForEditor = vi.fn<() => { data: EditorData | null; isLoading: boolean }>(() => ({ data: null, isLoading: false }));
 vi.mock("../lib/events", () => ({ useEventForEditor: () => mockUseEventForEditor() }));
 const mockSave = vi.fn().mockResolvedValue({ eventId: "e1", childErrors: [] });
@@ -41,7 +42,7 @@ it("allows saving a cancelled event instead of dead-ending on the status validat
       event: {
         id: "e1", org_id: "a1", name: "Apo Sky Ultra", place: null, region: null,
         event_date: null, flag_off: null, status: "cancelled",
-        elevation_gain_m: null, cutoff_hours: null, description: null, hero_image_url: null,
+        elevation_gain_m: null, cutoff_hours: null, description: null, hero_image_url: null, gallery: [],
       },
       categories: [],
       addons: [],
@@ -70,4 +71,28 @@ it("on a create-mode partial save, navigates to the edit route instead of leavin
   ));
   // Must not take the old "/events" success redirect on a partial failure.
   expect(mockNav).not.toHaveBeenCalledWith("/events");
+});
+
+it("carries hero_image_url + gallery through to save", async () => {
+  mockUseParams.mockReturnValue({ id: "e1" });
+  mockUseEventForEditor.mockReturnValue({
+    data: {
+      event: {
+        id: "e1", org_id: "a1", name: "Apo", place: null, region: null,
+        event_date: null, flag_off: null, status: "open",
+        elevation_gain_m: null, cutoff_hours: null, description: null,
+        hero_image_url: "https://cdn/hero.png", gallery: ["https://cdn/g1.png"],
+      },
+      categories: [],
+      addons: [],
+    },
+    isLoading: false,
+  });
+  render(<MemoryRouter><EventEditor /></MemoryRouter>);
+  fireEvent.click(await screen.findByText("Save event"));
+  await waitFor(() => expect(mockSave).toHaveBeenCalled());
+  expect(mockSave.mock.calls[0]![0].event).toMatchObject({
+    hero_image_url: "https://cdn/hero.png",
+    gallery: ["https://cdn/g1.png"],
+  });
 });

@@ -16,3 +16,8 @@ it("addon rejects negative price", () => {
   expect(addonInputSchema.safeParse({ name: "Singlet", price: 65000 }).success).toBe(true);
   expect(addonInputSchema.safeParse({ name: "Singlet", price: -5 }).success).toBe(false);
 });
+it("accepts a gallery array and defaults it when omitted", () => {
+  expect(eventInputSchema.safeParse({ ...validEvent, gallery: ["https://cdn/a.png"] }).success).toBe(true);
+  expect(eventInputSchema.parse(validEvent).gallery).toEqual([]);
+  expect(eventInputSchema.safeParse({ ...validEvent, gallery: [1, 2] }).success).toBe(false);
+});

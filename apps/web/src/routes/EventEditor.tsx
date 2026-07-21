@@ -7,11 +7,12 @@ import { saveEvent, type CategoryDraft, type AddonDraft, type EventDraft } from 
 import { eventInputSchema, categoryInputSchema, addonInputSchema, EVENT_STATUSES } from "../lib/validation";
 import { CategoryEditor } from "../components/CategoryEditor";
 import { AddonEditor } from "../components/AddonEditor";
+import { EventImagesEditor } from "../components/EventImagesEditor";
 
 const label = { display: "block", fontSize: 11, fontWeight: 600, letterSpacing: ".4px", color: "var(--ink-muted)", marginBottom: 6 } as const;
 const input = { background: "var(--canvas)", border: "1px solid var(--hairline)", borderRadius: 11, padding: "12px 13px", color: "var(--ink)", fontSize: 14, width: "100%" } as const;
 const card = { background: "var(--canvas)", border: "1px solid var(--hairline)", borderRadius: "var(--radius-card)", padding: 22 } as const;
-const blank: EventDraft = { org_id: "", name: "", place: null, region: null, event_date: null, flag_off: null, status: "draft", elevation_gain_m: null, cutoff_hours: null, description: null, hero_image_url: null };
+const blank: EventDraft = { org_id: "", name: "", place: null, region: null, event_date: null, flag_off: null, status: "draft", elevation_gain_m: null, cutoff_hours: null, description: null, hero_image_url: null, gallery: [] };
 
 export function EventEditor() {
   const { id } = useParams();
@@ -114,10 +115,10 @@ export function EventEditor() {
               <div><span style={label}>CUTOFF (HOURS)</span><input aria-label="Cutoff hours" type="number" style={input} value={event.cutoff_hours ?? ""} onChange={(e) => set({ cutoff_hours: num(e.target.value) })} /></div>
             </div>
             <div><span style={label}>DESCRIPTION</span><textarea aria-label="Description" style={{ ...input, height: 82, resize: "vertical" }} value={event.description ?? ""} onChange={(e) => set({ description: e.target.value || null })} /></div>
-            <div><span style={label}>HERO IMAGE URL</span><input aria-label="Hero image URL" placeholder="https://…" style={input} value={event.hero_image_url ?? ""} onChange={(e) => set({ hero_image_url: e.target.value || null })} /></div>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <EventImagesEditor orgId={orgId} heroUrl={event.hero_image_url} gallery={event.gallery} onChange={(v) => set(v)} />
           <CategoryEditor rows={cats} onChange={setCats} />
           <AddonEditor rows={addons} onChange={setAddons} />
         </div>
