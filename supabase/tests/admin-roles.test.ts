@@ -118,9 +118,9 @@ describe("admin draft-event read", () => {
 });
 
 describe("seeded admin", () => {
-  it("admin@runwithpoint.test signs in and holds admin on Run With Point", async () => {
+  it("admin@racepace.test signs in and holds admin on Race Pace", async () => {
     const signedIn = await anon().auth.signInWithPassword({
-      email: "admin@runwithpoint.test", password: "password123",
+      email: "admin@racepace.test", password: "password123",
     });
     expect(signedIn.error).toBeNull();
     const token = signedIn.data.session!.access_token;

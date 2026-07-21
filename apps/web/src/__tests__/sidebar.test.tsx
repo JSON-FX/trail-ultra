@@ -5,7 +5,7 @@ import { Sidebar } from "../components/Sidebar";
 let mockRoles: { data?: { isSuperAdmin: boolean } } = {};
 vi.mock("../lib/roles", () => ({ useMyRoles: () => mockRoles }));
 vi.mock("../lib/auth", () => ({
-  useAuth: () => ({ signOut: vi.fn(), session: { user: { email: "admin@runwithpoint.test" } } }),
+  useAuth: () => ({ signOut: vi.fn(), session: { user: { email: "admin@racepace.test" } } }),
 }));
 
 function renderSidebar() {

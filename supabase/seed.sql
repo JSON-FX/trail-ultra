@@ -1,8 +1,8 @@
--- Organizations. a1 (Run With Point) kept for backend tests; a2..a5 populate the
+-- Organizations. a1 (Race Pace) kept for backend tests; a2..a5 populate the
 -- marketplace to match the Race Pace design. Avatars/banners are generated in-app
 -- from brand_color + initials, so no image URLs are needed.
 insert into organizations (id, name, slug, brand_color, commission_rate, description) values
-  ('00000000-0000-0000-0000-0000000000a1', 'Run With Point', 'run-with-point', '#159A55', 0.10,
+  ('00000000-0000-0000-0000-0000000000a1', 'Race Pace', 'race-pace', '#159A55', 0.10,
    'Trail and ultra races across Davao and the Mt Apo highlands.'),
   ('00000000-0000-0000-0000-0000000000a2', 'Apo Skyrunners Assoc.', 'apo-skyrunners', '#159A55', 0.10,
    'Community of mountain runners staging Mindanao''s toughest sky ultras since 2016. Trail with respect, finish with pride.'),
@@ -82,7 +82,7 @@ begin
     confirmation_token, recovery_token, email_change_token_new, email_change
   ) values (
     '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated',
-    'admin@runwithpoint.test', crypt('password123', gen_salt('bf')),
+    'admin@racepace.test', crypt('password123', gen_salt('bf')),
     now(), now(), now(),
     '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
     '', '', '', ''
@@ -92,7 +92,7 @@ begin
     id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
   ) values (
     gen_random_uuid(), admin_id, admin_id::text,
-    jsonb_build_object('sub', admin_id::text, 'email', 'admin@runwithpoint.test', 'email_verified', true),
+    jsonb_build_object('sub', admin_id::text, 'email', 'admin@racepace.test', 'email_verified', true),
     'email', now(), now(), now()
   );
 

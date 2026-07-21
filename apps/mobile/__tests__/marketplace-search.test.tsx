@@ -12,7 +12,7 @@ const mockEvent: any = {
   status: "open", hero_image_url: null, description: null,
   gallery: [], original_date: null, status_note: null,
   city_psgc_code: "112603", region_name: "Region XI (Davao Region)", province_name: "Davao del Sur", city_name: "City of Digos", venue: null,
-  org_name: "Run With Point", org_color: "#159A55",
+  org_name: "Race Pace", org_color: "#159A55",
 };
 jest.mock("../lib/events", () => ({
   useMarketplaceEvents: () => ({ data: [mockEvent], isLoading: false, isError: false, refetch: jest.fn() }),
