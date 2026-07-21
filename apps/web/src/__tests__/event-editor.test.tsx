@@ -89,7 +89,10 @@ it("carries hero_image_url + gallery through to save", async () => {
     isLoading: false,
   });
   render(<MemoryRouter><EventEditor /></MemoryRouter>);
-  fireEvent.click(await screen.findByText("Save event"));
+  // the images editor replaced the old hero-URL text field
+  expect(await screen.findByText("Images")).toBeInTheDocument();
+  expect(screen.queryByLabelText("Hero image URL")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText("Save event"));
   await waitFor(() => expect(mockSave).toHaveBeenCalled());
   expect(mockSave.mock.calls[0]![0].event).toMatchObject({
     hero_image_url: "https://cdn/hero.png",
