@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatAddress } from "@race-pace/shared";
 import { useMyRoles } from "../lib/roles";
 import { useOrgEvents, type AdminEventRow } from "../lib/events";
 import { RescheduleModal } from "../components/RescheduleModal";
@@ -76,7 +77,9 @@ export function Events() {
             <div key={e.id} style={{ display: "grid", gridTemplateColumns: GRID, padding: "14px 20px", borderTop: "1px solid var(--row-border)", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{e.name}</div>
-                {e.place ? <div style={{ fontSize: 12, color: "var(--ink-muted)" }}>{e.place}</div> : null}
+                {(formatAddress({ city_name: e.city_name, province_name: e.province_name }) || e.place) ? (
+                  <div style={{ fontSize: 12, color: "var(--ink-muted)" }}>{formatAddress({ city_name: e.city_name, province_name: e.province_name }) || e.place}</div>
+                ) : null}
               </div>
               <div style={{ fontSize: 13 }}>
                 {fmtDate(e.event_date)}
