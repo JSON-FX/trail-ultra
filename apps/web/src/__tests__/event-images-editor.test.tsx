@@ -43,3 +43,25 @@ it("hides the picker at the 8-image cap", () => {
   render(<EventImagesEditor orgId="a1" heroUrl="https://cdn/hero.png" gallery={g} onChange={vi.fn()} />);
   expect(screen.queryByLabelText("Add images")).toBeNull(); // 1 + 7 = 8 → full
 });
+
+it("adds multiple files in one batch, keeping the first as featured", async () => {
+  uploadMock.mockResolvedValueOnce("https://cdn/a1/one.png").mockResolvedValueOnce("https://cdn/a1/two.png");
+  const onChange = vi.fn();
+  render(<EventImagesEditor orgId="a1" heroUrl={null} gallery={[]} onChange={onChange} />);
+  fireEvent.change(screen.getByLabelText("Add images"), { target: { files: [png("one.png"), png("two.png")] } });
+  await waitFor(() =>
+    expect(onChange).toHaveBeenLastCalledWith({ hero_image_url: "https://cdn/a1/one.png", gallery: ["https://cdn/a1/two.png"] }));
+});
+
+it("locks starring/removing and re-picking while an upload is in flight", async () => {
+  let resolve!: (u: string) => void;
+  uploadMock.mockReturnValueOnce(new Promise<string>((r) => { resolve = r; }));
+  render(<EventImagesEditor orgId="a1" heroUrl="https://cdn/hero.png" gallery={[]} onChange={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Add images"), { target: { files: [png("new.png")] } });
+  expect(await screen.findByLabelText("Uploading")).toBeInTheDocument();
+  expect(screen.queryByLabelText("Add images")).toBeNull();      // picker hidden while pending
+  expect(screen.getByLabelText("Featured image")).toBeDisabled();
+  expect(screen.getByLabelText("Remove image")).toBeDisabled();
+  resolve("https://cdn/a1/new.png");
+  await waitFor(() => expect(screen.queryByLabelText("Uploading")).toBeNull());
+});

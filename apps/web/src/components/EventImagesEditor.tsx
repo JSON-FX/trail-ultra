@@ -20,7 +20,7 @@ export function EventImagesEditor({ orgId, heroUrl, gallery, onChange }: {
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const urls: string[] = [...(heroUrl ? [heroUrl] : []), ...gallery];
+  const urls: string[] = Array.from(new Set([...(heroUrl ? [heroUrl] : []), ...gallery]));
   const featured = heroUrl ?? gallery[0] ?? null;
 
   const emit = (nextUrls: string[], nextFeatured: string | null) => {
@@ -73,9 +73,11 @@ export function EventImagesEditor({ orgId, heroUrl, gallery, onChange }: {
           <div key={url} style={tile}>
             <img src={url} alt="Event image" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             <button type="button" aria-label={url === featured ? "Featured image" : "Set as featured"}
-              onClick={() => star(url)} style={{ ...round(url === featured ? "var(--primary)" : "rgba(0,0,0,0.5)"), top: 6, left: 6 }}>★</button>
+              onClick={() => star(url)} disabled={pending > 0}
+              style={{ ...round(url === featured ? "var(--primary)" : "rgba(0,0,0,0.5)"), top: 6, left: 6, opacity: pending > 0 ? 0.5 : 1 }}>★</button>
             <button type="button" aria-label="Remove image"
-              onClick={() => remove(url)} style={{ ...round("rgba(0,0,0,0.5)"), top: 6, right: 6, fontSize: 15 }}>×</button>
+              onClick={() => remove(url)} disabled={pending > 0}
+              style={{ ...round("rgba(0,0,0,0.5)"), top: 6, right: 6, fontSize: 15, opacity: pending > 0 ? 0.5 : 1 }}>×</button>
             {url === featured ? (
               <span style={{ position: "absolute", bottom: 6, left: 6, background: "var(--primary)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>FEATURED</span>
             ) : null}
@@ -88,7 +90,7 @@ export function EventImagesEditor({ orgId, heroUrl, gallery, onChange }: {
         ))}
       </div>
 
-      {!full ? (
+      {!full && pending === 0 ? (
         <label style={{ display: "inline-block", marginTop: 12, fontSize: 13, fontWeight: 600, color: "var(--primary)", cursor: "pointer" }}>
           + Add images
           <input ref={fileRef} type="file" accept="image/*" multiple aria-label="Add images"
