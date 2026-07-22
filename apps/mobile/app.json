@@ -6,14 +6,22 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "racepace",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       "expo-web-browser",
-      "expo-video"
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Race Pace to access your photos so you can set a profile and cover photo."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.racepace.mobile"
     },
     "android": {
       "adaptiveIcon": {

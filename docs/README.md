@@ -27,6 +27,7 @@ ultra-trail event platform (Mindanao, Philippines).
 - [x] **Plan 4 · Pay · confirm · ticket · offline** — [plan](./plans/04-pay-ticket-offline.md)
 - [x] **Plan 5 · Marketplace (data + event page)** · **Plan 6 · Orgs + nav cleanup** — [05](./plans/05-marketplace-data-event.md) · [06](./plans/06-orgs-cleanup.md)
 - [x] **Plan 7 · Runner profile (passport)** · **Plan 8 · PSGC standardized addresses** — [07](./plans/07-runner-profile-core.md) · [08](./plans/08-psgc-addresses.md)
+- [x] **Mobile UI → React Native Reusables migration** — [spec](./specs/2026-07-22-mobile-rnr-migration-design.md) · [plan](./plans/mobile-rnr-migration.md) — all 13 screens re-platformed to [React Native Reusables](https://reactnativereusables.com/) on NativeWind with full **light + dark** theming (trail-green semantic tokens in `apps/mobile/global.css`; legacy `lib/theme.ts` removed). Money-path screens (register/pay/ticket) migrated with checkout/payment/offline logic verified byte-identical (diff/MD5/SHA-256). mobile 55/55, tsc clean. *On-device iOS + Android light/dark walkthrough pending (Task 34 §2–3).*
 
 **Admin web console (M3)** — `apps/web`, served at `https://admin.racepace.lan` (Docker + Traefik):
 - [x] **Plan 9 · Admin foundation** — [spec](./specs/2026-07-20-admin-foundation-design.md) · [plan](./plans/09-admin-foundation.md) — `user_roles` + role-scoped RLS + role-adaptive shell + read-only Events list (backend `admin-roles` 7/7, web 8/8 green)

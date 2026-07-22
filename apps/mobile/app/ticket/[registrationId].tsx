@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { View, ScrollView, ActivityIndicator, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRegistration } from "../../lib/registration";
@@ -9,7 +9,7 @@ import { useAuth } from "../../lib/auth";
 import { TicketQR } from "../../components/TicketQR";
 import { StatusBanner } from "../../components/StatusBadge";
 import { longDate } from "../../lib/format";
-import { theme } from "../../lib/theme";
+import { Text } from "@/components/ui/text";
 
 export default function Ticket() {
   const { registrationId } = useLocalSearchParams<{ registrationId: string }>();
@@ -40,71 +40,53 @@ export default function Ticket() {
   const categoryLabel = reg.data?.categoryLabel ?? cached?.categoryLabel ?? "";
   const ref = registrationId.slice(0, 8).toUpperCase();
 
-  if (!cacheLoaded && reg.isLoading) return <View style={styles.center}><ActivityIndicator color={theme.primary} /></View>;
+  if (!cacheLoaded && reg.isLoading) return <View className="flex-1 items-center justify-center bg-muted"><ActivityIndicator className="text-primary" /></View>;
 
   return (
-    <ScrollView style={styles.c} contentContainerStyle={{ paddingTop: insets.top + 6, paddingHorizontal: 22, paddingBottom: insets.bottom + 30 }} showsVerticalScrollIndicator={false}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" style={{ paddingVertical: 8 }}><Text style={styles.back}>‹ My Races</Text></Pressable>
+    <ScrollView className="flex-1 bg-muted" contentContainerStyle={{ paddingTop: insets.top + 6, paddingHorizontal: 22, paddingBottom: insets.bottom + 30 }} showsVerticalScrollIndicator={false}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" className="py-2"><Text className="text-[15px] font-medium text-primary">‹ My Races</Text></Pressable>
 
       {reg.data ? <StatusBanner event={{ status: reg.data.eventStatus ?? "open", original_date: reg.data.originalDate, event_date: reg.data.eventDate, status_note: reg.data.statusNote }} /> : null}
 
       {token ? (
         <>
-          <View style={styles.card}>
-            <View style={styles.pass}>
-              <Text style={styles.passKicker}>RACE PASS · {categoryLabel.toUpperCase()}</Text>
-              <Text style={styles.passEvent}>{eventName}</Text>
-              {reg.data?.eventDate ? <Text style={styles.passDate}>{longDate(reg.data.eventDate)}</Text> : null}
+          <View className="mt-1.5 overflow-hidden rounded-[22px] border border-border bg-card">
+            <View className="bg-forest p-[22px]">
+              <Text className="text-[11px] font-semibold tracking-[0.5px] text-white/60">RACE PASS · {categoryLabel.toUpperCase()}</Text>
+              <Text className="mt-2 text-[22px] font-bold tracking-[-0.3px] text-white">{eventName}</Text>
+              {reg.data?.eventDate ? <Text className="mt-[5px] text-[13px] text-white/75">{longDate(reg.data.eventDate)}</Text> : null}
             </View>
-            <View style={styles.qrSection}>
-              <View style={styles.qrBox}><TicketQR value={token} size={150} /></View>
-              <Text style={styles.ref}>{ref}</Text>
-              <Text style={styles.qrNote}>Show this QR at check-in. <Text style={{ fontWeight: "700" }}>Works offline.</Text></Text>
+            <View className="items-center border-t-[1.5px] border-dashed border-border p-[26px]">
+              <View className="rounded-[16px] border border-border bg-white p-[14px]"><TicketQR value={token} size={150} /></View>
+              <Text className="mt-[14px] text-[13px] text-muted-foreground" style={{ fontFamily: "Courier", letterSpacing: 1 }}>{ref}</Text>
+              <Text className="mt-1.5 text-center text-[13px] text-foreground">Show this QR at check-in. <Text className="font-bold">Works offline.</Text></Text>
             </View>
           </View>
 
-          <View style={styles.grid}>
+          <View className="mt-[14px] flex-row flex-wrap gap-[10px]">
             <Info label="RUNNER" value={profile?.full_name || "—"} />
             <Info label="BIB" value={profile?.bib_name || ref} />
             <Info label="CATEGORY" value={categoryLabel} />
             <Info label="DISTANCE" value={reg.data?.categoryDistance ? `${reg.data.categoryDistance} KM` : "—"} />
           </View>
 
-          <View style={styles.pulseChip}>
-            <View style={styles.pulseDot} />
-            <Text style={styles.pulseT}>Present QR at start line</Text>
+          <View className="mt-[14px] flex-row items-center justify-center gap-[10px] rounded-[14px] bg-secondary p-[14px]">
+            <View className="h-[11px] w-[11px] rounded-[6px] bg-primary" />
+            <Text className="text-[13px] font-semibold text-secondary-foreground">Present QR at start line</Text>
           </View>
         </>
       ) : (
-        <Text style={styles.empty}>No ticket yet — complete payment to get your race pass.</Text>
+        <Text className="mt-10 text-center text-muted-foreground">No ticket yet — complete payment to get your race pass.</Text>
       )}
     </ScrollView>
   );
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <View style={styles.infoCard}><Text style={styles.infoLabel}>{label}</Text><Text style={styles.infoValue} numberOfLines={1}>{value}</Text></View>;
+  return (
+    <View className="grow basis-[47%] rounded-[14px] border border-border bg-card p-[14px]">
+      <Text className="text-[10px] text-muted-foreground">{label}</Text>
+      <Text className="mt-[3px] text-[14px] font-semibold text-foreground" numberOfLines={1}>{value}</Text>
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  c: { flex: 1, backgroundColor: theme.parchment },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.parchment },
-  back: { color: theme.primary, fontSize: 15, fontWeight: "500" },
-  card: { backgroundColor: theme.canvas, borderWidth: 1, borderColor: theme.hairline, borderRadius: 22, overflow: "hidden", marginTop: 6 },
-  pass: { backgroundColor: theme.forest, padding: 22 },
-  passKicker: { color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "600", letterSpacing: 0.5 },
-  passEvent: { color: "#fff", fontSize: 22, fontWeight: "700", letterSpacing: -0.3, marginTop: 8 },
-  passDate: { color: "rgba(255,255,255,0.75)", fontSize: 13, marginTop: 5 },
-  qrSection: { borderTopWidth: 1.5, borderTopColor: theme.hairline, borderStyle: "dashed", padding: 26, alignItems: "center" },
-  qrBox: { padding: 14, backgroundColor: "#fff", borderWidth: 1, borderColor: theme.hairline, borderRadius: 16 },
-  ref: { fontFamily: "Courier", color: theme.inkMuted, fontSize: 13, marginTop: 14, letterSpacing: 1 },
-  qrNote: { color: theme.ink, fontSize: 13, marginTop: 6, textAlign: "center" },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 14 },
-  infoCard: { flexGrow: 1, flexBasis: "47%", backgroundColor: theme.canvas, borderWidth: 1, borderColor: theme.hairline, borderRadius: 14, padding: 14 },
-  infoLabel: { fontSize: 10, color: theme.inkMuted },
-  infoValue: { fontSize: 14, fontWeight: "600", color: theme.ink, marginTop: 3 },
-  pulseChip: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: theme.primaryTint, borderRadius: 14, padding: 14, marginTop: 14 },
-  pulseDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: theme.primary },
-  pulseT: { color: theme.primaryDark, fontSize: 13, fontWeight: "600" },
-  empty: { color: theme.inkMuted, textAlign: "center", marginTop: 40 },
-});
