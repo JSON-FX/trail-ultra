@@ -35,6 +35,6 @@ Deno.serve(async (req) => {
     if (!r.ok) return json({ error: r.error }, r.status);
     return json({ ok: true, registration_id: r.registration_id, already: r.already });
   } catch (e) {
-    return json({ error: "server_error", details: String(e) }, 500);
+    return json({ error: "server_error" }, 500);
   }
 });

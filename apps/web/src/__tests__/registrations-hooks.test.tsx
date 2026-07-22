@@ -51,3 +51,10 @@ it("refundRegistration invokes the admin-refund function with the registration i
   expect(res.ok).toBe(true);
   expect(supabase.functions.invoke).toHaveBeenCalledWith("admin-refund", { body: { registration_id: "r1", note: null } });
 });
+
+it("maps a 409 refund error to a can't-be-refunded message", async () => {
+  (supabase.functions.invoke as unknown as { mockResolvedValueOnce: (v: unknown) => void }).mockResolvedValueOnce({ data: null, error: { context: { status: 409 } } });
+  const res = await refundRegistration("r1");
+  expect(res.ok).toBe(false);
+  expect(res.error).toMatch(/can't be refunded/);
+});

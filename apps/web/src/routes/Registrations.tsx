@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMyRoles } from "../lib/roles";
 import { useOrgEvents } from "../lib/events";
 import { useEventRegistrations, useEventRegistrationCounts, type RegistrationRow } from "../lib/registrations";
@@ -16,6 +17,7 @@ export function Registrations() {
   const orgId = roles.data?.orgId ?? undefined;
   const events = useOrgEvents(orgId);
   const counts = useEventRegistrationCounts(orgId);
+  const qc = useQueryClient();
   const [params, setParams] = useSearchParams();
   const eventId = params.get("event") ?? events.data?.[0]?.id ?? undefined;
 
@@ -86,7 +88,7 @@ export function Registrations() {
       )}
 
       {selected ? (
-        <RegistrationDetail row={selected} onClose={() => setSelected(null)} onRefunded={() => { setSelected(null); regs.refetch(); counts.refetch(); }} />
+        <RegistrationDetail row={selected} onClose={() => setSelected(null)} onRefunded={() => { setSelected(null); regs.refetch(); counts.refetch(); qc.invalidateQueries({ queryKey: ["org-events"] }); }} />
       ) : null}
     </div>
   );

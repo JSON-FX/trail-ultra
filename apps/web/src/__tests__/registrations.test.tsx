@@ -2,6 +2,8 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { Registrations } from "../routes/Registrations";
 
+const invalidateQueries = vi.fn();
+vi.mock("@tanstack/react-query", async (orig) => ({ ...(await orig() as object), useQueryClient: () => ({ invalidateQueries }) }));
 vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1" } }) }));
 vi.mock("../lib/events", () => ({ useOrgEvents: () => ({ data: [{ id: "e1", name: "Apo Sky Ultra" }, { id: "e2", name: "Second Race" }] }) }));
 vi.mock("../lib/registrations", () => ({
@@ -14,7 +16,7 @@ vi.mock("../lib/registrations", () => ({
     isLoading: false, refetch: vi.fn(),
   }),
 }));
-vi.mock("../components/RegistrationDetail", () => ({ RegistrationDetail: ({ row }: { row: { full_name: string } }) => <div data-testid="detail">{row.full_name}</div> }));
+vi.mock("../components/RegistrationDetail", () => ({ RegistrationDetail: ({ row, onRefunded }: { row: { full_name: string }; onRefunded: () => void }) => <div data-testid="detail">{row.full_name}<button onClick={onRefunded}>trigger-refund</button></div> }));
 vi.mock("../components/PaymentBadge", () => ({ PaymentBadge: ({ status }: { status: string }) => <span>{status}</span> }));
 
 const at = (path = "/registrations?event=e1") => render(<MemoryRouter initialEntries={[path]}><Registrations /></MemoryRouter>);
@@ -52,4 +54,11 @@ it("resets the category filter and closes the detail when the event changes", ()
   fireEvent.change(screen.getByLabelText("Event"), { target: { value: "e2" } });
   expect(screen.getByText("Ben Diaz")).toBeInTheDocument();
   expect(screen.queryByTestId("detail")).not.toBeInTheDocument();
+});
+
+it("invalidates the Events list fill after a refund", () => {
+  at();
+  fireEvent.click(screen.getByText("Ana Cruz"));
+  fireEvent.click(screen.getByText("trigger-refund"));
+  expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ["org-events"] });
 });

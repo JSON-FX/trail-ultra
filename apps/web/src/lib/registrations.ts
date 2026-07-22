@@ -83,7 +83,15 @@ export function useEventRegistrationCounts(orgId?: string) {
 /** Issue a full refund via the admin-refund Edge Function. */
 export async function refundRegistration(registrationId: string, note?: string): Promise<{ ok: boolean; error?: string }> {
   const { error } = await supabase.functions.invoke("admin-refund", { body: { registration_id: registrationId, note: note ?? null } });
-  if (error) return { ok: false, error: "Refund failed. Please try again." };
+  if (error) {
+    const status = (error as { context?: { status?: number } }).context?.status;
+    const msg =
+      status === 403 ? "You don't have permission to refund this registration."
+      : status === 409 ? "This registration can't be refunded — it isn't paid."
+      : status === 404 ? "Registration not found."
+      : "Refund failed. Please try again.";
+    return { ok: false, error: msg };
+  }
   return { ok: true };
 }
 
