@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { View, Pressable, SectionList } from "react-native";
-import { ChevronLeft, Search } from "lucide-react-native";
+import { ChevronLeft, Search, X } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
@@ -12,7 +12,8 @@ function sectionOrgs(orgs: OrgRow[]): { title: string; data: OrgRow[] }[] {
   const sorted = [...orgs].sort((a, b) => a.name.localeCompare(b.name));
   const sections = new Map<string, OrgRow[]>();
   for (const org of sorted) {
-    const letter = org.name[0]?.toUpperCase() ?? "#";
+    const char = org.name[0]?.toUpperCase() ?? "#";
+    const letter = /[A-Z]/.test(char) ? char : "#";
     if (!sections.has(letter)) sections.set(letter, []);
     sections.get(letter)!.push(org);
   }
@@ -67,7 +68,7 @@ export function OrganizerFilterPicker({ orgs, selectedIds, onChangeSelectedIds, 
               className="flex-row items-center gap-[6px] bg-secondary rounded-full px-[10px] py-[5px]"
             >
               <Text className="text-[12px] font-semibold text-secondary-foreground">{o.name}</Text>
-              <Text className="text-[12px] text-secondary-foreground/70">✕</Text>
+              <Icon as={X} size={12} className="text-secondary-foreground/70" />
             </Pressable>
           ))}
         </View>
@@ -93,7 +94,7 @@ export function OrganizerFilterPicker({ orgs, selectedIds, onChangeSelectedIds, 
             </Pressable>
           );
         }}
-        ListEmptyComponent={<Text className="text-muted-foreground py-6 text-center">No organizers match "{q}"</Text>}
+        ListEmptyComponent={<Text className="text-muted-foreground py-6 text-center">{q.trim() ? `No organizers match "${q}"` : "No organizers to show"}</Text>}
       />
     </View>
   );
