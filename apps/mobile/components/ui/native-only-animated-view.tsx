@@ -1,29 +1,29 @@
-import { Platform, Pressable } from 'react-native';
-import Animated from 'react-native-reanimated';
+import * as React from 'react';
+import { Platform, Pressable, View } from 'react-native';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+// reanimated 4 does not initialize in Expo Go (SDK 57): `createAnimatedComponent`
+// is undefined at module-eval time and crashes on import ("undefined is not a
+// function"), taking down any screen that renders an RNR select/dialog. The
+// animation here is purely cosmetic (entrance/exit fades), so we render plain RN
+// views and drop it. `entering`/`exiting` (reanimated layout animations) are
+// accepted for API compatibility but ignored. To restore animations, run a
+// custom dev build (where reanimated 4 works) and revert this file to the
+// reanimated version.
+type Props = Record<string, unknown> & {
+  as?: 'View' | 'Pressable';
+  children?: React.ReactNode;
+  entering?: unknown;
+  exiting?: unknown;
+};
 
-/**
- * This component is used to wrap animated views that should only be animated on native.
- * @param props - The props for the animated view.
- * @returns The animated view if the platform is native, otherwise the children.
- * @example
- * <NativeOnlyAnimatedView entering={FadeIn} exiting={FadeOut}>
- *   <Text>I am only animated on native</Text>
- * </NativeOnlyAnimatedView>
- */
-function NativeOnlyAnimatedView(
-  props: (React.ComponentProps<typeof Animated.View> & React.RefAttributes<typeof Animated.View> 
-    & { as?: "View" }) | (React.ComponentProps<typeof AnimatedPressable> & React.RefAttributes<typeof AnimatedPressable> & { as: "Pressable" })
-) {
+function NativeOnlyAnimatedView({ as, entering: _entering, exiting: _exiting, ...rest }: Props) {
   if (Platform.OS === 'web') {
-    return <>{props.children as React.ReactNode}</>;
-  } else {
-    if (props.as === "Pressable"){
-      return <AnimatedPressable {...props} />;
-    }
-    return <Animated.View {...props} />;
+    return <>{(rest as { children?: React.ReactNode }).children}</>;
   }
+  if (as === 'Pressable') {
+    return <Pressable {...(rest as React.ComponentProps<typeof Pressable>)} />;
+  }
+  return <View {...(rest as React.ComponentProps<typeof View>)} />;
 }
 
 export { NativeOnlyAnimatedView };
