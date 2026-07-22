@@ -1,8 +1,9 @@
 import { useMemo, useEffect, useState } from "react";
-import { View, ScrollView, Pressable, Alert, Image, ActivityIndicator, TextInput } from "react-native";
+import { View, ScrollView, Pressable, Alert, Image, ActivityIndicator, TextInput, Modal, ActionSheetIOS, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Camera, ChevronRight } from "lucide-react-native";
 import { useAuth } from "../../lib/auth";
 import { getProfile, upsertProfile } from "../../lib/profile";
@@ -47,6 +48,8 @@ export default function Profile() {
   const [busy, setBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState<null | "avatar" | "cover">(null);
   const [overCover, setOverCover] = useState(true); // status-bar is light while the forest cover is under it
+  const [showDob, setShowDob] = useState(false);
+  const [viewer, setViewer] = useState<string | null>(null); // full-screen image viewer
   const [saved, setSaved] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -81,7 +84,29 @@ export default function Profile() {
   }
   async function doSignOut() { await signOut(); router.replace("/(auth)/sign-in"); }
 
-  async function changePhoto(kind: "avatar" | "cover") {
+  // Tapping the avatar/cover: pick straight away when empty, otherwise a
+  // View / Replace / Remove menu for the existing photo.
+  function handlePhoto(kind: "avatar" | "cover") {
+    if (!uid || photoBusy) return;
+    const url = kind === "avatar" ? avatarUrl : coverUrl;
+    if (!url) { pickPhoto(kind); return; }
+    const label = kind === "avatar" ? "profile photo" : "cover photo";
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { title: `Edit ${label}`, options: ["View photo", "Replace photo", "Remove photo", "Cancel"], destructiveButtonIndex: 2, cancelButtonIndex: 3 },
+        (i) => { if (i === 0) setViewer(url); else if (i === 1) pickPhoto(kind); else if (i === 2) removePhoto(kind); }
+      );
+    } else {
+      Alert.alert(`Edit ${label}`, undefined, [
+        { text: "View photo", onPress: () => setViewer(url) },
+        { text: "Replace photo", onPress: () => pickPhoto(kind) },
+        { text: "Remove photo", style: "destructive", onPress: () => removePhoto(kind) },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
+  }
+
+  async function pickPhoto(kind: "avatar" | "cover") {
     if (!uid || photoBusy) return;
     try {
       setPhotoBusy(kind);
@@ -97,7 +122,20 @@ export default function Profile() {
     }
   }
 
+  async function removePhoto(kind: "avatar" | "cover") {
+    if (!uid) return;
+    if (kind === "avatar") setAvatarUrl(null); else setCoverUrl(null);
+    const { error } = await upsertProfile({ id: uid, ...(kind === "avatar" ? { avatar_url: null } : { cover_url: null }) });
+    if (error) Alert.alert("Couldn't remove photo", error);
+  }
+
+  function onDobChange(_event: unknown, selected?: Date) {
+    if (Platform.OS !== "ios") setShowDob(false);
+    if (selected) setDob(toYMD(selected));
+  }
+
   const name = fullName || session?.user.email || "Runner";
+  const dobDate = dob ? new Date(`${dob}T00:00:00`) : new Date(2000, 0, 1);
 
   return (
     <View className="flex-1 bg-background">
@@ -119,7 +157,7 @@ export default function Profile() {
 
           <View className="px-[22px] pb-8" style={{ paddingTop: insets.top + 18 }}>
             <View className="flex-row items-center gap-4">
-              <Pressable onPress={() => changePhoto("avatar")} accessibilityRole="button" accessibilityLabel="Change profile photo">
+              <Pressable onPress={() => handlePhoto("avatar")} accessibilityRole="button" accessibilityLabel="Change profile photo">
                 <Avatar alt={name} style={{ width: 76, height: 76, borderRadius: 38 }} className="border-2 border-white/25">
                   {avatarUrl ? <AvatarImage source={{ uri: avatarUrl }} /> : null}
                   <AvatarFallback style={{ backgroundColor: "#0B2018", borderRadius: 38 }}>
@@ -145,7 +183,7 @@ export default function Profile() {
           </View>
 
           <Pressable
-            onPress={() => changePhoto("cover")}
+            onPress={() => handlePhoto("cover")}
             accessibilityRole="button"
             accessibilityLabel="Change cover photo"
             className="absolute right-3.5 flex-row items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5"
@@ -173,7 +211,10 @@ export default function Profile() {
               <Text className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-secondary-foreground">fill once</Text>
             </View>
             <Text className="pb-1 text-[12px] leading-[17px] text-muted-foreground">We'll add these to every race you register for.</Text>
-            <TextRow label="Date of birth" value={dob} onChangeText={setDob} placeholder="YYYY-MM-DD" autoCapitalize="none" accessibilityLabel="Date of birth" first />
+            <Pressable className={ROW} onPress={() => setShowDob(true)} accessibilityRole="button" accessibilityLabel="Date of birth">
+              <Text className={RLABEL}>Date of birth</Text>
+              <Text className={dob ? RVALUE : "text-[15px] text-muted-foreground/60"}>{dob || "Select"}</Text>
+            </Pressable>
             <SelectRow label="Gender" value={gender} options={GENDERS} placeholder="Select" onChange={setGender} accessibilityLabel="Gender" />
             <SelectRow label="Shirt size" value={shirtSize} options={SHIRT_SIZES} placeholder="Select" onChange={setShirtSize} accessibilityLabel="Shirt size" />
             <SelectRow label="Blood type" value={bloodType} options={BLOOD_TYPES} placeholder="Select" onChange={setBloodType} accessibilityLabel="Blood type" />
@@ -204,6 +245,28 @@ export default function Profile() {
           </Button>
         </View>
       ) : null}
+
+      {/* Date of birth picker */}
+      <Modal visible={showDob} transparent animationType="slide" onRequestClose={() => setShowDob(false)}>
+        <Pressable className="flex-1 bg-black/40" onPress={() => setShowDob(false)} />
+        <View className="bg-card px-4 pt-1" style={{ paddingBottom: insets.bottom + 12 }}>
+          <View className="flex-row items-center justify-between border-b border-border">
+            <Text className="pl-1 text-[13px] font-semibold text-muted-foreground">Date of birth</Text>
+            <Button variant="ghost" onPress={() => setShowDob(false)}>
+              <Text className="text-[15px] font-semibold text-primary">Done</Text>
+            </Button>
+          </View>
+          <DateTimePicker value={dobDate} mode="date" display="spinner" maximumDate={new Date()} onChange={onDobChange} />
+        </View>
+      </Modal>
+
+      {/* Full-screen image viewer */}
+      <Modal visible={!!viewer} transparent animationType="fade" onRequestClose={() => setViewer(null)}>
+        <Pressable className="flex-1 items-center justify-center bg-black/95" onPress={() => setViewer(null)}>
+          {viewer ? <Image source={{ uri: viewer }} style={{ width: "100%", height: "78%" }} resizeMode="contain" /> : null}
+          <Text className="absolute text-[13px] text-white/70" style={{ bottom: insets.bottom + 26 }}>Tap to close</Text>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -257,6 +320,12 @@ function SelectRow({ label, value, options, placeholder, onChange, accessibility
       </Select>
     </View>
   );
+}
+
+function toYMD(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
 // Emergency contact is stored in one column; the UI splits it into name + phone.
