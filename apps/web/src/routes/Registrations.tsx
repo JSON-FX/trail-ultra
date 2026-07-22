@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMyRoles } from "../lib/roles";
 import { useOrgEvents } from "../lib/events";
@@ -24,6 +24,13 @@ export function Registrations() {
   const [catFilter, setCatFilter] = useState("all");
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<RegistrationRow | null>(null);
+
+  // Category ids are per-event and an open detail belongs to the previous event,
+  // so reset both when the selected event changes.
+  useEffect(() => {
+    setCatFilter("all");
+    setSelected(null);
+  }, [eventId]);
 
   const cats = useMemo(() => {
     const m = new Map<string, string>();

@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { Registrations } from "../routes/Registrations";
 
 vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1" } }) }));
-vi.mock("../lib/events", () => ({ useOrgEvents: () => ({ data: [{ id: "e1", name: "Apo Sky Ultra" }] }) }));
+vi.mock("../lib/events", () => ({ useOrgEvents: () => ({ data: [{ id: "e1", name: "Apo Sky Ultra" }, { id: "e2", name: "Second Race" }] }) }));
 vi.mock("../lib/registrations", () => ({
   useEventRegistrationCounts: () => ({ data: { e1: 2 }, refetch: vi.fn() }),
   useEventRegistrations: () => ({
@@ -39,4 +39,17 @@ it("opens the detail when a row is clicked", () => {
   at();
   fireEvent.click(screen.getByText("Ana Cruz"));
   expect(screen.getByTestId("detail")).toHaveTextContent("Ana Cruz");
+});
+
+it("resets the category filter and closes the detail when the event changes", () => {
+  at();
+  // narrow to 10K (only Ana), and open Ana's detail
+  fireEvent.change(screen.getByLabelText("Category"), { target: { value: "c4" } });
+  expect(screen.queryByText("Ben Diaz")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText("Ana Cruz"));
+  expect(screen.getByTestId("detail")).toBeInTheDocument();
+  // switching events resets the category filter (Ben reappears) and closes the detail
+  fireEvent.change(screen.getByLabelText("Event"), { target: { value: "e2" } });
+  expect(screen.getByText("Ben Diaz")).toBeInTheDocument();
+  expect(screen.queryByTestId("detail")).not.toBeInTheDocument();
 });
