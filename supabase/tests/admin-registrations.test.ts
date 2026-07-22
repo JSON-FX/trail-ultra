@@ -45,6 +45,7 @@ describe("admin registration reads", () => {
     expect((await authed(other.token).from("registrations").select("id").eq("id", reg.data!.id)).data ?? []).toHaveLength(0);
     expect((await authed(other.token).from("payments").select("registration_id").eq("registration_id", reg.data!.id)).data ?? []).toHaveLength(0);
     expect((await authed(other.token).from("profiles").select("id").eq("id", runner.id)).data ?? []).toHaveLength(0);
+    expect((await authed(other.token).from("registration_addons").select("addon_id").eq("registration_id", reg.data!.id)).data ?? []).toHaveLength(0);
 
     // runner still reads only their own registration (read_own intact)
     expect((await authed(runner.token).from("registrations").select("id").eq("id", reg.data!.id)).data).toHaveLength(1);
@@ -53,5 +54,20 @@ describe("admin registration reads", () => {
     await svc.from("user_roles").delete().in("user_id", [admin.id, other.id]);
     await svc.from("profiles").delete().in("id", [runner.id, stranger.id]);
     for (const u of [admin, other, runner, stranger]) await svc.auth.admin.deleteUser(u.id);
+  });
+
+  it("decrement_slot is service-role only and floors slots_taken at 0", async () => {
+    const svc = service();
+    const runner = await makeUser(`ds_run_${Date.now()}@test.dev`);
+    // a non-service (authenticated) caller cannot execute the function
+    const denied = await authed(runner.token).rpc("decrement_slot", { p_category_id: C4 });
+    expect(denied.error).not.toBeNull();
+    // the service role can, and it floors slots_taken at 0
+    const before = await svc.from("categories").select("slots_taken").eq("id", C4).single();
+    const ok = await svc.rpc("decrement_slot", { p_category_id: C4 });
+    expect(ok.error).toBeNull();
+    const after = await svc.from("categories").select("slots_taken").eq("id", C4).single();
+    expect(after.data!.slots_taken).toBe(Math.max(0, before.data!.slots_taken - 1));
+    await svc.auth.admin.deleteUser(runner.id);
   });
 });

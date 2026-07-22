@@ -24,4 +24,5 @@ create or replace function decrement_slot(p_category_id uuid)
 returns void language sql as $$
   update categories set slots_taken = greatest(slots_taken - 1, 0) where id = p_category_id;
 $$;
+revoke all on function decrement_slot(uuid) from public;
 grant execute on function decrement_slot(uuid) to service_role;
