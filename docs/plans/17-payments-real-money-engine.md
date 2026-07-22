@@ -40,7 +40,7 @@ Every task's requirements implicitly include this section.
 
 **Interfaces:**
 - Consumes: `registrations`/`payments`/`categories` tables; `registration_status` enum.
-- Produces: `confirm_payment_tx(p_registration_id uuid, p_method text, p_fee int, p_net int, p_token text, p_raw jsonb) returns text` (`'paid'`|`'already'`|`'not_found'`); `refund_registration_tx(p_registration_id uuid, p_refunded_by uuid, p_note text, p_provider_refund jsonb) returns text` (`'refunded'`|`'already'`|`'not_paid'`|`'not_found'`). Both `service_role`-only.
+- Produces: `confirm_payment_tx(p_registration_id uuid, p_method text, p_fee int, p_net int, p_token text, p_raw jsonb) returns text` (`'paid'`|`'already'`|`'not_pending'`|`'not_found'` — `not_pending` guards a refunded/cancelled reg from being re-confirmed by a replayed webhook); `refund_registration_tx(p_registration_id uuid, p_refunded_by uuid, p_note text, p_provider_refund jsonb) returns text` (`'refunded'`|`'already'`|`'not_paid'`|`'not_found'`). Both `service_role`-only.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -184,6 +184,7 @@ begin
     from public.registrations where id = p_registration_id for update;
   if not found then return 'not_found'; end if;
   if v_status = 'paid' then return 'already'; end if;
+  if v_status <> 'pending' then return 'not_pending'; end if;  -- refunded/cancelled: never re-confirm (replay-safe)
 
   update public.payments
      set status = 'paid', method = p_method, platform_fee = p_fee,
@@ -322,6 +323,7 @@ export async function confirmPayment(
     .single();
   if (!reg) return { ok: false, error: "not_found", status: 404 };
   if (reg.status === "paid") return { ok: true, registration_id: reg.id, already: true };
+  if (reg.status !== "pending") return { ok: true, registration_id: reg.id, already: true }; // refunded/cancelled: no-op (replay-safe)
 
   const rate = (reg.organizations as { commission_rate: number } | null)?.commission_rate ?? 0.10;
   const fee = Math.round(reg.total_amount * rate);
@@ -342,7 +344,7 @@ export async function confirmPayment(
     p_raw: (raw ?? {}) as Record<string, unknown>,
   });
   if (error) return { ok: false, error: "confirm_write_failed", status: 500 };
-  return { ok: true, registration_id: reg.id, already: result === "already" };
+  return { ok: true, registration_id: reg.id, already: result === "already" || result === "not_pending" };
 }
 ```
 
