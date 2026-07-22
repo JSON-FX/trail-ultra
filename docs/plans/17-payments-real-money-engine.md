@@ -568,22 +568,21 @@ git commit -m "feat(payments): real PayMongo refund via provider abstraction + a
 **Files:**
 - Create: `supabase/functions/_shared/paymongo-webhook.ts` (`verifyWebhookSignature`)
 - Modify: `supabase/functions/payments-webhook/index.ts` (replace the dev stub)
-- Modify: `supabase/functions/.env` (add `PAYMONGO_WEBHOOK_SECRET`)
+- Modify: `supabase/functions/.env.example` (document `PAYMONGO_WEBHOOK_SECRET`) — the real value lives in the **gitignored** `.env`, already configured by the test harness; never commit `.env`
 - Test: `supabase/tests/backend.test.ts` (migrate the `paidRegistration` helper + the e2e case; add signed-webhook cases)
 
 **Interfaces:**
 - Consumes: `confirmPayment` (Task 2); `refund_registration_tx` (Task 1); `serviceClient`.
 - Produces: `verifyWebhookSignature(rawBody: string, header: string | null, secret: string, maxAgeSec?: number): Promise<boolean>`; the webhook now returns `401` on bad signature, routes `checkout_session.payment.paid` → confirm and `refund.updated` → reconcile, `200`-ignores unknown types.
 
-- [ ] **Step 1: Set the local webhook secret**
+- [ ] **Step 1: Document the webhook secret (committed) — the real value is already set locally**
 
-Add to `supabase/functions/.env` (create the line if absent) — **do not** add `PAYMONGO_SECRET_KEY` (keeps checkout on the fake provider locally):
+The gitignored `supabase/functions/.env` already has `PAYMONGO_WEBHOOK_SECRET=whsec_test_localdev` set and `PAYMONGO_SECRET_KEY` commented out (fake provider); the running `supabase functions serve` from this worktree already has it and recompiles per request — **do not edit `.env`, restart the serve, or run `supabase db reset`** (the harness manages them). Only document the new var in the committed example — append to `supabase/functions/.env.example`:
 
 ```
-PAYMONGO_WEBHOOK_SECRET=whsec_test_localdev
+# Webhook signing secret from the PayMongo webhook resource (hosted); a test-only value locally.
+PAYMONGO_WEBHOOK_SECRET=whsec_your_paymongo_webhook_secret
 ```
-
-Restart `supabase functions serve` so it is picked up.
 
 - [ ] **Step 2: Write the signed-webhook tests (failing) + migrate the helper**
 
@@ -788,7 +787,7 @@ Expected: PASS — 401 on bad signature; unknown type ignored; `refund.updated` 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add supabase/functions/_shared/paymongo-webhook.ts supabase/functions/payments-webhook/index.ts supabase/functions/.env supabase/tests/backend.test.ts
+git add supabase/functions/_shared/paymongo-webhook.ts supabase/functions/payments-webhook/index.ts supabase/functions/.env.example supabase/tests/backend.test.ts
 git commit -m "feat(payments): signature-verified PayMongo webhook (paid + refund.updated reconciliation)" \
   -m "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```
