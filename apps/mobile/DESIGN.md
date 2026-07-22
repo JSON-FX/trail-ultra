@@ -1,19 +1,24 @@
 ---
 version: alpha
 name: Apple-design-analysis
-description: A photography-first interface that turns marketing into a museum gallery. Edge-to-edge product tiles alternate light and dark canvases, framed by SF Pro Display headlines with negative letter-spacing and a single Action Blue (#0066cc) interactive color. UI chrome recedes so the product can speak — no decorative gradients, no shadows on chrome, only the one signature drop-shadow under product imagery resting on a surface.
+description: A photography-first, apparel-clean interface for the Race Pace trail-running marketplace. Built on the getdesign `apple` chassis — SF Pro headlines with negative letter-spacing, white/parchment surfaces, hairline dividers, pill CTAs — but re-skinned around a single trail-green (#159A55) interactive color plus a small trailhead status palette. The app now runs on NativeWind semantic tokens with a full light + dark theme; `apps/mobile/global.css` is the source of truth and this document describes those tokens.
 
 colors:
-  primary: "#0066cc"
-  primary-focus: "#0071e3"
-  primary-on-dark: "#2997ff"
+  # Brand accent — trail green (was Apple "Action Blue" #0066cc; blue now survives only as the `info` status)
+  primary: "#159a55"
+  primary-focus: "#0f7a42"
+  primary-on-dark: "#2fb56a"
+  primary-tint: "#eaf3ee"
+  forest: "#0f2a20"
+  # Neutrals / surfaces (unchanged from the apple chassis)
   ink: "#1d1d1f"
   body: "#1d1d1f"
   body-on-dark: "#ffffff"
   body-muted: "#cccccc"
   ink-muted-80: "#333333"
   ink-muted-48: "#7a7a7a"
-  divider-soft: "#f0f0f0"
+  ink-faint: "#cccccc"
+  divider-soft: "#efeff1"
   hairline: "#e0e0e0"
   canvas: "#ffffff"
   canvas-parchment: "#f5f5f7"
@@ -25,6 +30,15 @@ colors:
   surface-chip-translucent: "#d2d2d7"
   on-primary: "#ffffff"
   on-dark: "#ffffff"
+  # Status language (fg / tint bg) — the only palette beyond the green accent
+  status-paid: "#0f7a42"
+  status-paid-tint: "#eaf3ee"
+  status-info: "#0066cc"
+  status-info-tint: "#e8f0fb"
+  status-danger: "#ff3b30"
+  status-danger-tint: "#fdecea"
+  status-amber: "#b45309"
+  status-amber-tint: "#fbefe3"
 
 typography:
   hero-display:
@@ -275,17 +289,17 @@ components:
 
 ## Overview
 
-Apple's web presence is a masterclass in **reverent product photography framed by near-invisible UI**. Every page is a stack of edge-to-edge product "tiles" — alternating light and dark canvases, each centered on a hero headline, a one-line tagline, two tiny blue pill CTAs, and an impossibly crisp product render. Nothing competes with the product. Typography is confident but quiet; color is either pure white, an off-white parchment, or a near-black tile; interactive elements are a single, quiet blue.
+Race Pace inherits the getdesign `apple` chassis — **reverent imagery framed by near-invisible UI** — and re-skins it for trail running. Screens are calm stacks of white/parchment surfaces (or their dark-mode counterparts), each centered on a confident SF Pro headline, quiet supporting copy, and trail-green pill CTAs. Nothing competes with the content; color is either surface-neutral or the single trail-green accent, with a small status palette (paid/info/danger/amber) for registration and payment states. **Note:** the structural analysis below (product tiles, store surfaces, the "Apple" references) describes the inherited chassis vocabulary; Race Pace's own accent is trail-green (#159A55), not the chassis's original Action Blue — see the Colors section for the authoritative palette.
 
 Density is unusually low even by contemporary SaaS standards. Each tile occupies roughly one viewport, and there is no decorative chrome — no borders, no gradients, no decorative frames, no shadows on headlines. Elevation appears only when a product image rests on a surface (a single soft `rgba(0, 0, 0, 0.22) 3px 5px 30px` drop for visual weight). The result is a catalog that feels more like a museum gallery: the wall disappears and the artifact takes over.
 
-Store and shop surfaces retain the same chassis but switch modes. The product configurator (iPhone 17 Pro, accessories grid) introduces a tight grid of white utility cards at `{rounded.lg}` (18px) radius with a thin border, paired with a persistent thin sub-nav strip. The environment page leans darker and more editorial. Across all five surfaces the typographic system, spacing rhythm, and the single blue accent are consistent — this is one design language expressed at different volumes.
+Store and shop surfaces retain the same chassis but switch modes. The product configurator (iPhone 17 Pro, accessories grid) introduces a tight grid of white utility cards at `{rounded.lg}` (18px) radius with a thin border, paired with a persistent thin sub-nav strip. The environment page leans darker and more editorial. Across all surfaces the typographic system, spacing rhythm, and the single trail-green accent are consistent — this is one design language expressed at different volumes.
 
 **Key Characteristics:**
 - Photography-first presentation; UI recedes so the product can speak.
 - Alternating full-bleed tile sections: white/parchment ↔ near-black, with the color change itself acting as the section divider.
-- Single blue accent (`{colors.primary}` — #0066cc) carries every interactive element. No second brand color exists.
-- Two button grammars: tiny blue pill CTAs (`{rounded.pill}`) and compact utility rects (`{rounded.sm}`).
+- Single trail-green accent (`{colors.primary}` — #159A55) carries every interactive element; a small status palette (paid/info/danger/amber) is the only color beyond it.
+- Two button grammars: trail-green pill CTAs (`{rounded.pill}`) and compact utility rects (`{rounded.sm}`).
 - SF Pro Display + SF Pro Text — negative letter-spacing at display sizes for the signature "Apple tight" headline feel.
 - Whisper-soft elevation used only when a product image needs to breathe — exactly one drop-shadow in the entire system.
 - Tight two-row nav: slim `{component.global-nav}` + product-specific `{component.sub-nav-frosted}` with persistent right-aligned primary CTA.
@@ -296,9 +310,42 @@ Store and shop surfaces retain the same chassis but switch modes. The product co
 > **Source pages analyzed:** homepage, environment, store, iPhone 17 Pro buy page, accessories index. The color system is identical across all five surfaces; only the surface-mode mix differs.
 
 ### Brand & Accent
-- **Action Blue** (`{colors.primary}` — #0066cc): The single brand-level interactive color. All text links, all blue pill CTAs ("Learn more", "Buy"), and the focus ring root. This is Apple's quiet but universal "click me" signal. Press state shifts to a slightly darker variant via the active scale transform rather than a hex change.
-- **Focus Blue** (`{colors.primary-focus}` — #0071e3): A marginally brighter sibling of Action Blue, reserved for the keyboard focus ring on buttons (`outline: 2px solid`).
-- **Sky Link Blue** (`{colors.primary-on-dark}` — #2997ff): A brighter blue used on dark surfaces for in-copy links and inline callouts, where Action Blue would disappear against the tile background.
+- **Trail Green** (`{colors.primary}` — #159A55): The single brand-level interactive color — the Race Pace signature. Every pill CTA (Sign in, Register, Pay, View ticket), every text link, prices, selected states, and the focus ring root. Replaces the Apple chassis's original "Action Blue" (#0066cc), which now appears **only** as the `info`/rescheduled status color. Press state shifts to `{colors.primary-focus}` via the active scale transform rather than a hex change.
+- **Forest Focus** (`{colors.primary-focus}` — #0F7A42): A darker sibling of Trail Green for pressed/active button states and the "Paid" / "present QR" labels.
+- **Trail Green on Dark** (`{colors.primary-on-dark}` — #2FB56A): The lighter green the accent flips to in dark mode (`--primary` in the `.dark` palette), so the accent keeps AA contrast on the near-black canvas.
+- **Trail Tint** (`{colors.primary-tint}` — #EAF3EE): The pale green surface behind selected rows, category chips, and the elevation-hero background — the `--secondary` token in light mode.
+- **Forest** (`{colors.forest}` — #0F2A20): The deep-green "pass" surface on the ticket race-pass and the profile/org banners. Theme-independent — identical in light and dark — so it reads the same in both modes.
+
+### Status Language (the only palette beyond the green accent)
+Statuses are fg-on-tint pairs, mirrored in the `.dark` palette (values in the Dark Mode Palette table below):
+- **Paid** (`{colors.status-paid}` #0F7A42 on `{colors.status-paid-tint}` #EAF3EE): confirmed registrations, "Paid" chips.
+- **Info / Rescheduled** (`{colors.status-info}` #0066CC on `{colors.status-info-tint}` #E8F0FB): the sole remaining use of the old Action Blue — rescheduled-event banners.
+- **Danger** (`{colors.status-danger}` #FF3B30 on `{colors.status-danger-tint}` #FDECEA): cancelled events, destructive actions (Sign out), validation errors.
+- **Amber** (`{colors.status-amber}` #B45309 on `{colors.status-amber-tint}` #FBEFE3): almost-full categories and the offline indicator.
+
+### Dark Mode Palette
+The app ships a full dark theme (`.dark` block in `global.css`). Semantic tokens flip; fixed brand surfaces (forest pass, the white QR tile) do not. Reference values:
+
+| Semantic token | Light | Dark |
+|---|---|---|
+| `background` | #FFFFFF | #0B0F0D |
+| `foreground` | #1D1D1F | #F5F5F7 |
+| `card` | #FFFFFF | #141916 |
+| `muted` (parchment) | #F5F5F7 | #1B211D |
+| `muted-foreground` | #7A7A7A | #A1A1A6 |
+| `secondary` (trail tint) | #EAF3EE | #13251C |
+| `secondary-foreground` | #0F7A42 | #7FE0A6 |
+| `primary` (trail green) | #159A55 | #2FB56A |
+| `primary-foreground` | #FFFFFF | #06120B |
+| `border` | #E0E0E0 | #262B28 |
+| `divider` | #EFEFF1 | #262B28 |
+| `destructive` | #FF3B30 | #FF453A |
+| `paid` | #0F7A42 | #35C06E |
+| `info` | #0066CC | #0A84FF |
+| `amber` | #B45309 | #E0A345 |
+| `forest` (fixed) | #0F2A20 | #0F2A20 |
+
+> **Source of truth:** `apps/mobile/global.css` defines every token above as RGB channels (`--token: R G B`) consumed via `rgb(var(--token) / <alpha-value>)`, mapped to Tailwind utilities in `tailwind.config.js`. This `DESIGN.md` documents them; the CSS is authoritative. The legacy `lib/theme.ts` bridge has been removed.
 
 ### Surface
 - **Pure White** (`{colors.canvas}` — #ffffff): The dominant canvas. Content, utility cards, store tiles, configurator grids.
@@ -415,7 +462,7 @@ Apple's whitespace is the product's pedestal. Every tile begins with at least 64
 | `{rounded.sm}` | 8px | Dark utility buttons (Sign In, Bag), inline card imagery |
 | `{rounded.md}` | 11px | White Pearl Button capsules |
 | `{rounded.lg}` | 18px | Store utility cards, accessories grid cards |
-| `{rounded.pill}` | 9999px | Primary blue pill CTAs, sub-nav buy button, configurator option chips, search input — the signature Apple pill |
+| `{rounded.pill}` | 9999px | Primary trail-green pill CTAs, sub-nav buy button, configurator option chips, search input — the signature pill |
 | `{rounded.full}` | 9999px / 50% | Circular control chips floating over photography |
 
 ### Photography Geometry
@@ -435,23 +482,23 @@ Apple's whitespace is the product's pedestal. Every tile begins with at least 64
 
 ### Buttons
 
-**`button-primary`** — The signature Apple action. Background `{colors.primary}` (Action Blue #0066cc), text `{colors.on-primary}` in `{typography.body}` (SF Pro Text 17px / 400), rounded `{rounded.pill}` (full pill — capsule-shaped), padding 11px × 22px. The full-pill radius IS the brand action signal.
+**`button-primary`** — The signature action. Background `{colors.primary}` (Trail Green #159A55), text `{colors.on-primary}` in `{typography.body}` (SF Pro Text 17px / 400), rounded `{rounded.pill}` (full pill — capsule-shaped), padding 11px × 22px. The full-pill radius IS the brand action signal. In dark mode the fill flips to `{colors.primary-on-dark}` (#2FB56A) with near-black text via the `--primary-foreground` token.
 - Active state: `{component.button-primary-active}` — `transform: scale(0.95)` (the system-wide micro-interaction).
 - Focus state: `{component.button-primary-focus}` — 2px solid `{colors.primary-focus}` outline.
 
-**`button-secondary-pill`** — Used as the second CTA when two blue pills appear together ("Learn more" / "Buy"). Background transparent, text `{colors.primary}`, 1px solid `{colors.primary}` border, rounded `{rounded.pill}`, padding 11px × 22px. Reads as a "ghost pill."
+**`button-secondary-pill`** — Used as the second CTA when two green pills appear together. Background transparent, text `{colors.primary}`, 1px solid `{colors.primary}` border, rounded `{rounded.pill}`, padding 11px × 22px. Reads as a "ghost pill."
 
 **`button-dark-utility`** — Global nav actions (Sign In, Bag, language selector). Background `{colors.ink}` (#1d1d1f), text `{colors.on-dark}` in `{typography.button-utility}` (14px / 400 / -0.224px tracking), rounded `{rounded.sm}` (8px), padding 8px × 15px. Active state shrinks via `transform: scale(0.95)`.
 
 **`button-pearl-capsule`** — Product-card secondary button. Background `{colors.surface-pearl}` (#fafafc), text `{colors.ink-muted-80}` in `{typography.caption}` (14px), 3px solid `{colors.divider-soft}` border (functions as a soft ring rather than a visible line), rounded `{rounded.md}` (11px), padding 8px × 14px.
 
-**`button-store-hero`** — A larger primary CTA used on store hero surfaces. Same Action Blue + Paper White as `{component.button-primary}`, but with `{typography.button-large}` (18px / 300 — note the rare weight 300) and slightly more padding (14px × 28px). Used sparingly on the store landing.
+**`button-store-hero`** — A larger primary CTA. Same Trail Green + white as `{component.button-primary}`, but with `{typography.button-large}` (18px / 300 — note the rare weight 300) and slightly more padding (14px × 28px). Used sparingly for hero moments.
 
 **`button-icon-circular`** — Floats over photography. 44 × 44px, background `{colors.surface-chip-translucent}` at ~64% alpha, icon in `{colors.ink}`, rounded `{rounded.full}`. Used for carousel controls, close buttons, and in-image controls (product image thumbnails on the iPhone buy page).
 
-**`text-link`** — Inline body links in `{colors.primary}` (Action Blue). Underlined or non-underlined per context.
+**`text-link`** — Inline body links in `{colors.primary}` (Trail Green). Underlined or non-underlined per context.
 
-**`text-link-on-dark`** — Inline body links on dark tiles in `{colors.primary-on-dark}` (Sky Link Blue #2997ff) — Action Blue would disappear against `{colors.surface-tile-1}`.
+**`text-link-on-dark`** — In dark mode, the `primary` token resolves to `{colors.primary-on-dark}` (#2FB56A) so links keep contrast against the near-black canvas. Use the semantic token; don't hardcode either green.
 
 ### Cards & Containers
 
@@ -459,7 +506,7 @@ Apple's whitespace is the product's pedestal. Every tile begins with at least 64
 
 **`product-tile-parchment`** — Same as `{component.product-tile-light}` but on `{colors.canvas-parchment}` (#f5f5f7). Used to break two consecutive white tiles.
 
-**`product-tile-dark`** — Full-bleed dark tile. Background `{colors.surface-tile-1}` (#272729), text `{colors.on-dark}`, rounded `{rounded.none}`, vertical padding `{spacing.section}` (80px). Same content stack as the light tile but with `{component.text-link-on-dark}` for inline copy and `{component.button-primary}` (Action Blue still works on the dark surface). Used on the homepage product grid as the alternating dark band.
+**`product-tile-dark`** — Full-bleed dark tile. Background `{colors.surface-tile-1}` (#272729), text `{colors.on-dark}`, rounded `{rounded.none}`, vertical padding `{spacing.section}` (80px). Same content stack as the light tile but with `{component.text-link-on-dark}` for inline copy and `{component.button-primary}` (Trail Green still works on the dark surface). Used as an alternating dark band.
 
 **`product-tile-dark-2`** — Variant on `{colors.surface-tile-2}` (#2a2a2c). Used where a dark tile sits directly above or below `{component.product-tile-dark}` to create the faintest separation through micro-step lightness change.
 
@@ -488,24 +535,24 @@ Error and validation states were not surfaced in the analyzed pages.
 ## Do's and Don'ts
 
 ### Do
-- Use `{colors.primary}` (Action Blue #0066cc) for every interactive element — links, pill CTAs, focus signals — and nothing else. The single accent is non-negotiable.
+- Use `{colors.primary}` (Trail Green #159A55) for every interactive element — links, pill CTAs, focus signals. The single accent is non-negotiable; only the status palette (paid/info/danger/amber) adds color, and only for state.
 - Set headlines in `{typography.hero-display}` or `{typography.display-lg}` with negative letter-spacing (`-0.28 → -0.374px`) to get the signature "Apple tight" cadence.
 - Run body copy at `{typography.body}` (17px / 400 / 1.47 / -0.374px) — not 16px. The extra pixel defines the brand's reading pace.
 - Alternate `{component.product-tile-light}` (or parchment) and `{component.product-tile-dark}` for full-bleed section rhythm. The color change IS the divider.
-- Reserve `{rounded.pill}` for the primary blue CTA and any other element that should read as an "action" (configurator chips, search input, sticky bar CTA).
+- Reserve `{rounded.pill}` for the primary trail-green CTA and any other element that should read as an "action" (configurator chips, search input, sticky bar CTA).
 - Apply the single product-shadow (`rgba(0, 0, 0, 0.22) 3px 5px 30px`) only to product renders resting on a surface — never on cards, buttons, or text.
 - Use `transform: scale(0.95)` as the active/press state on every button — it's the system-wide micro-interaction.
 - Keep the global nav `{colors.surface-black}` (true black) — it's the only place pure black appears on most pages.
 
 ### Don't
-- Don't introduce a second accent color; every "click me" signal is `{colors.primary}` (Action Blue).
+- Don't introduce a second *accent* color; every "click me" signal is `{colors.primary}` (Trail Green). The status palette (paid/info/danger/amber) is not an accent — use it only to signal registration/payment state, never for generic CTAs.
 - Don't add shadows to cards, buttons, or text — shadow is reserved for product imagery.
 - Don't use gradients as decorative backgrounds; atmosphere comes from photography.
 - Don't set body copy at weight 500 — Apple's ladder is 300 / 400 / 600 / 700, with 500 deliberately absent. Body is always 400; strong inline is 600; display is 600.
 - Don't round full-bleed tiles — tiles are rectangular and edge-to-edge; the color change is the divider.
 - Don't tighten line-height below 1.47 for body copy — the editorial leading is part of the brand.
 - Don't mix radii grammars — use `{rounded.sm}` for compact utility, `{rounded.lg}` for utility cards, `{rounded.pill}` for pills, and nothing in between (except the rare `{rounded.md}` Pearl Button).
-- Don't use `{colors.primary-on-dark}` (Sky Link Blue) on light surfaces — it's the dark-tile-only variant. Action Blue is for light surfaces.
+- Don't hand-pick `{colors.primary-on-dark}` (#2FB56A) on light surfaces — it's the value the `primary` token already flips to in dark mode. Use the semantic `primary` token and let the theme resolve light vs dark; never hardcode either green.
 
 ## Responsive Behavior
 
