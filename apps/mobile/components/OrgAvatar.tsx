@@ -1,5 +1,5 @@
-import { View, Text } from "react-native";
-import { theme } from "../lib/theme";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Text } from "@/components/ui/text";
 
 export function initials(name?: string | null): string {
   if (!name) return "?";
@@ -11,12 +11,12 @@ export function initials(name?: string | null): string {
 export function OrgAvatar({ name, color, size = 24, radius }: {
   name?: string | null; color?: string | null; size?: number; radius?: number;
 }) {
+  const borderRadius = radius ?? size / 2;
   return (
-    <View style={{
-      width: size, height: size, borderRadius: radius ?? size / 2,
-      backgroundColor: color || theme.primary, alignItems: "center", justifyContent: "center",
-    }}>
-      <Text style={{ color: "#fff", fontWeight: "700", fontSize: Math.max(9, Math.round(size * 0.4)) }}>{initials(name)}</Text>
-    </View>
+    <Avatar alt={name ? `${name} logo` : "Organization logo"} style={{ width: size, height: size, borderRadius }}>
+      <AvatarFallback style={{ backgroundColor: color || "#159A55" /* trail-green brand default */, borderRadius }}>
+        <Text style={{ color: "#fff", fontWeight: "700", fontSize: Math.max(9, Math.round(size * 0.4)) }}>{initials(name)}</Text>
+      </AvatarFallback>
+    </Avatar>
   );
 }
