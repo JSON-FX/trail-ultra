@@ -30,7 +30,7 @@ ultra-trail event platform (Mindanao, Philippines).
 
 **Admin web console (M3)** — `apps/web`, served at `https://admin.racepace.lan` (Docker + Traefik):
 - [x] **Plan 9 · Admin foundation** — [spec](./specs/2026-07-20-admin-foundation-design.md) · [plan](./plans/09-admin-foundation.md) — `user_roles` + role-scoped RLS + role-adaptive shell + read-only Events list (backend `admin-roles` 7/7, web 8/8 green)
-- [ ] **Plan 10 · Events management** — create/edit events, categories/add-ons, custom-field editor, reschedule/cancel
+- [x] **Plan 10 · Events management** — [spec](./specs/2026-07-21-events-management-design.md) · [plan](./plans/10-events-management.md) — create/edit events (RLS-gated direct writes), categories/add-ons sub-editors, one-Save child reconcile, reschedule + cancel (hard-delete draft-only) (event-editor 3/3, web 16/16 green). *Custom-field editor deferred (form_fields still read-only).*
 - [x] **Plan 11 · Event images** — [plan](./plans/11-event-images.md) — featured + gallery upload (Supabase Storage, client-side compression) and mobile rendering (event cards + detail carousel) (storage 2/2, web 27/27, mobile 45/45 green)
 - [x] **Plan 12 · Editor structured inputs** — [plan](./plans/12-editor-structured-inputs.md) — PSGC Region→Province→City pickers + Venue, native date/time inputs (web)
 - [ ] **Plan 13 · Registrations & payments** — table/detail, admin refunds
