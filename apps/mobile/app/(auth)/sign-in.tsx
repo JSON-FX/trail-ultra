@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { View, TextInput, KeyboardAvoidingView, Platform, Image } from "react-native";
+import { View, TextInput, KeyboardAvoidingView, Platform, Image, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { StatusBar } from "expo-status-bar";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../lib/auth";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { GoogleLogo, FacebookLogo } from "@/components/SocialLogos";
 
 const BG_VIDEO = require("../../assets/racepace-login-bg.mp4");
 const LOGO = require("../../assets/login-logo.png");
@@ -38,6 +39,11 @@ export default function SignIn() {
     setBusy(false);
     if (error) setError(error);
     else router.replace("/");
+  }
+
+  // OAuth providers aren't wired up yet — the buttons are real, the flow is next.
+  function onOAuth(provider: "Google" | "Facebook") {
+    Alert.alert(`Sign in with ${provider}`, "Social sign-in is coming soon.");
   }
 
   return (
@@ -90,12 +96,42 @@ export default function SignIn() {
             <Button onPress={onSubmit} disabled={busy} className="mt-1 h-auto py-4 sm:h-auto">
               <Text className="text-[17px] font-semibold text-white">{busy ? "Signing in…" : "Sign in"}</Text>
             </Button>
-            <Text className="mt-2.5 text-center text-[13px] text-white/65">
-              Apple · Google · Facebook — coming soon
-            </Text>
-            <Link href="/(auth)/sign-up" className="mt-1.5 text-center text-base font-semibold text-white">
-              Create an account
-            </Link>
+
+            {/* Divider between email sign-in and the social options */}
+            <View className="mt-1 flex-row items-center gap-3">
+              <View className="h-px flex-1 bg-white/20" />
+              <Text className="text-[13px] text-white/50">or</Text>
+              <View className="h-px flex-1 bg-white/20" />
+            </View>
+
+            {/* Google — white button, 4-color mark, dark label (Google brand button) */}
+            <Button
+              onPress={() => onOAuth("Google")}
+              className="h-auto gap-2.5 bg-white py-4 shadow-sm active:bg-white/90 sm:h-auto"
+              accessibilityLabel="Sign in with Google"
+            >
+              <GoogleLogo size={19} />
+              <Text className="text-[16px] font-semibold text-[#1F1F1F]">Sign in with Google</Text>
+            </Button>
+
+            {/* Facebook — brand-blue button, white "f", white label */}
+            <Button
+              onPress={() => onOAuth("Facebook")}
+              className="h-auto gap-2.5 bg-[#1877F2] py-4 shadow-sm active:bg-[#1877F2]/90 sm:h-auto"
+              accessibilityLabel="Sign in with Facebook"
+            >
+              <FacebookLogo size={18} />
+              <Text className="text-[16px] font-semibold text-white">Sign in with Facebook</Text>
+            </Button>
+
+            {/* Create account — outlined tertiary CTA (transparent over the video) */}
+            <Button
+              onPress={() => router.push("/(auth)/sign-up")}
+              className="mt-1 h-auto border border-white/30 bg-transparent py-4 shadow-none active:bg-white/10 sm:h-auto"
+              accessibilityLabel="Create an account"
+            >
+              <Text className="text-[16px] font-semibold text-white">Create an account</Text>
+            </Button>
           </View>
         </View>
       </KeyboardAvoidingView>
