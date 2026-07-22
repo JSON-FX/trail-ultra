@@ -220,8 +220,38 @@ describe("payment confirmation (fake) e2e", () => {
     const after = await svc.from("categories").select("slots_taken").eq("id", "00000000-0000-0000-0000-0000000000c4").single();
     expect(after.data!.slots_taken).toBe(before.data!.slots_taken + 1); // relative — robust to prior runs
 
+    // A duplicate confirmation is a no-op — slot stays at +1 (idempotent through confirm_payment_tx).
+    await fetch(`${FN}/payments-webhook`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ registration_id: checkout.registration_id, method: "gcash" }),
+    });
+    const afterDup = await svc.from("categories").select("slots_taken").eq("id", "00000000-0000-0000-0000-0000000000c4").single();
+    expect(afterDup.data!.slots_taken).toBe(before.data!.slots_taken + 1);
+
     await svc.from("registrations").delete().eq("id", checkout.registration_id);
     await svc.auth.admin.deleteUser(user.id);
+  });
+});
+
+describe("confirm replay-safety (refunded)", () => {
+  it("a replayed confirmation on a refunded registration is a no-op — no re-pay, no re-increment", async () => {
+    const svc = service();
+    const runner = await makeUser(`creplay_${Date.now()}@test.dev`);
+    const rid = await paidRegistration(runner.token); // paid
+    // move it to refunded (mirrors a refund: status flip + slot release)
+    await svc.from("registrations").update({ status: "refunded" }).eq("id", rid);
+    await svc.from("payments").update({ status: "refunded" }).eq("registration_id", rid);
+    await svc.rpc("decrement_slot", { p_category_id: C4_RF });
+    const slotAfterRefund = (await svc.from("categories").select("slots_taken").eq("id", C4_RF).single()).data!.slots_taken;
+    // replay a payment via the fake-checkout page (calls confirmPayment) — must NOT re-confirm
+    const res = await fetch(`${FN}/fake-checkout?rid=${rid}&return=${encodeURIComponent("racepace://cb")}&action=pay`);
+    expect(res.status).toBe(200);
+    expect((await svc.from("registrations").select("status").eq("id", rid).single()).data!.status).toBe("refunded");
+    expect((await svc.from("payments").select("status").eq("registration_id", rid).single()).data!.status).toBe("refunded");
+    expect((await svc.from("categories").select("slots_taken").eq("id", C4_RF).single()).data!.slots_taken).toBe(slotAfterRefund);
+    await svc.from("registrations").delete().eq("id", rid);
+    await svc.auth.admin.deleteUser(runner.id);
   });
 });
 
