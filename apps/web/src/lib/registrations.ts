@@ -86,3 +86,60 @@ export async function refundRegistration(registrationId: string, note?: string):
   if (error) return { ok: false, error: "Refund failed. Please try again." };
   return { ok: true };
 }
+
+export type PaymentRow = {
+  registration_id: string;
+  event_id: string | null;
+  event_name: string | null;
+  user_id: string | null;
+  full_name: string | null;
+  amount: number;
+  platform_fee: number;
+  net_to_org: number;
+  method: string | null;
+  status: PaymentStatus;
+  created_at: string;
+};
+
+export function usePayments(orgId?: string) {
+  return useQuery<PaymentRow[]>({
+    queryKey: ["org-payments", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("registration_id,amount,platform_fee,net_to_org,method,status,created_at,registrations(event_id,user_id,events(name))")
+        .eq("org_id", orgId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const rows = (data ?? []) as Record<string, unknown>[];
+
+      const ids = [...new Set(rows.map((r) => one(r.registrations)?.user_id as string).filter(Boolean))];
+      let profiles: Record<string, string | null> = {};
+      if (ids.length) {
+        const { data: profs, error: pErr } = await supabase.from("profiles").select("id,full_name").in("id", ids);
+        if (pErr) throw pErr;
+        profiles = Object.fromEntries((profs ?? []).map((p: Record<string, unknown>) => [p.id as string, (p.full_name as string) ?? null]));
+      }
+
+      return rows.map((r): PaymentRow => {
+        const rg = one(r.registrations);
+        const ev = one(rg?.events);
+        const uid = (rg?.user_id as string) ?? null;
+        return {
+          registration_id: r.registration_id as string,
+          event_id: (rg?.event_id as string) ?? null,
+          event_name: (ev?.name as string) ?? null,
+          user_id: uid,
+          full_name: uid ? profiles[uid] ?? null : null,
+          amount: r.amount as number,
+          platform_fee: r.platform_fee as number,
+          net_to_org: r.net_to_org as number,
+          method: (r.method as string) ?? null,
+          status: r.status as PaymentStatus,
+          created_at: r.created_at as string,
+        };
+      });
+    },
+  });
+}
