@@ -269,3 +269,76 @@ describe("psgc reference data", () => {
     expect(prov.data?.region_code).toBe("010000000");
   });
 });
+
+const RWP_RF = "00000000-0000-0000-0000-0000000000a1";
+const APO_RF = "00000000-0000-0000-0000-0000000000a2";
+const E1_RF = "00000000-0000-0000-0000-0000000000e1";
+const C4_RF = "00000000-0000-0000-0000-0000000000c4";
+
+async function paidRegistration(runnerToken: string) {
+  const checkout = await fetch(`${FN}/registrations-checkout`, {
+    method: "POST",
+    headers: { "content-type": "application/json", Authorization: `Bearer ${runnerToken}` },
+    body: JSON.stringify({ event_id: E1_RF, category_id: C4_RF, custom_data: { blood_type: "A", shirt_size: "L" }, waiver_accepted: true, idempotency_key: `idem-rf-${Date.now()}` }),
+  }).then((r) => r.json());
+  await fetch(`${FN}/payments-webhook`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ registration_id: checkout.registration_id, method: "gcash" }) });
+  return checkout.registration_id as string;
+}
+const refundCall = (token: string, rid: string) => fetch(`${FN}/admin-refund`, { method: "POST", headers: { "content-type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ registration_id: rid }) });
+
+describe("admin-refund", () => {
+  it("org admin refunds a paid registration -> refunded + slot released; non-admin & other-org blocked; idempotent", async () => {
+    const svc = service();
+    const admin = await makeUser(`rf_adm_${Date.now()}@test.dev`);
+    await svc.from("user_roles").insert({ user_id: admin.id, role: "admin", org_id: RWP_RF });
+    const other = await makeUser(`rf_oth_${Date.now()}@test.dev`);
+    await svc.from("user_roles").insert({ user_id: other.id, role: "admin", org_id: APO_RF });
+    const runner = await makeUser(`rf_run_${Date.now()}@test.dev`);
+
+    const before = await svc.from("categories").select("slots_taken").eq("id", C4_RF).single();
+    const rid = await paidRegistration(runner.token);
+    const paid = await svc.from("categories").select("slots_taken").eq("id", C4_RF).single();
+    expect(paid.data!.slots_taken).toBe(before.data!.slots_taken + 1);
+
+    // runner (no role) and other-org admin are both forbidden
+    expect((await refundCall(runner.token, rid)).status).toBe(403);
+    expect((await refundCall(other.token, rid)).status).toBe(403);
+    expect((await svc.from("registrations").select("status").eq("id", rid).single()).data?.status).toBe("paid");
+
+    // org admin refund => 200, refunded, slot released back to baseline
+    const ok = await refundCall(admin.token, rid);
+    expect(ok.status).toBe(200);
+    expect((await svc.from("registrations").select("status").eq("id", rid).single()).data?.status).toBe("refunded");
+    expect((await svc.from("payments").select("status").eq("registration_id", rid).single()).data?.status).toBe("refunded");
+    expect((await svc.from("categories").select("slots_taken").eq("id", C4_RF).single()).data!.slots_taken).toBe(before.data!.slots_taken);
+
+    // idempotent: a second refund is a no-op, no further decrement
+    const again = await refundCall(admin.token, rid);
+    const againBody = await again.json();
+    expect(again.status).toBe(200);
+    expect(againBody.already).toBe(true);
+    expect((await svc.from("categories").select("slots_taken").eq("id", C4_RF).single()).data!.slots_taken).toBe(before.data!.slots_taken);
+
+    await svc.from("registrations").delete().eq("id", rid);
+    await svc.from("user_roles").delete().in("user_id", [admin.id, other.id]);
+    for (const u of [admin, other, runner]) await svc.auth.admin.deleteUser(u.id);
+  });
+
+  it("refuses to refund a pending (not paid) registration with 409", async () => {
+    const svc = service();
+    const admin = await makeUser(`rf_pend_${Date.now()}@test.dev`);
+    await svc.from("user_roles").insert({ user_id: admin.id, role: "admin", org_id: RWP_RF });
+    const runner = await makeUser(`rf_prun_${Date.now()}@test.dev`);
+    // checkout only (no webhook) => pending
+    const checkout = await fetch(`${FN}/registrations-checkout`, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${runner.token}` },
+      body: JSON.stringify({ event_id: E1_RF, category_id: C4_RF, custom_data: { blood_type: "A", shirt_size: "L" }, waiver_accepted: true, idempotency_key: `idem-pend-${Date.now()}` }),
+    }).then((r) => r.json());
+    expect((await refundCall(admin.token, checkout.registration_id)).status).toBe(409);
+
+    await svc.from("registrations").delete().eq("id", checkout.registration_id);
+    await svc.from("user_roles").delete().eq("user_id", admin.id);
+    for (const u of [admin, runner]) await svc.auth.admin.deleteUser(u.id);
+  });
+});
