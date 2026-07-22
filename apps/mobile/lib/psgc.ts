@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "./supabase";
 
 export type PsgcRow = { code: string; name: string };
+export type PsgcCity = { code: string; name: string; province_code: string | null; region_code: string };
 
 export function usePsgcRegions() {
   return useQuery({ queryKey: ["psgc-regions"], queryFn: async (): Promise<PsgcRow[]> => {
@@ -25,5 +26,15 @@ export function usePsgcCities({ provinceCode, regionCode, search }: { provinceCo
     if (search) q = q.ilike("name", `%${search}%`);
     const { data, error } = await q.order("name");
     if (error) throw error; return (data ?? []) as PsgcRow[];
+  }});
+}
+
+/** Reverse lookup for edit-seeding: PsgcAddress only carries a city code +
+ *  denormalized names, so recovering the region/province codes needed to
+ *  drive PsgcAddressPicker's cascade requires looking the city back up. */
+export function usePsgcCity(code?: string) {
+  return useQuery({ queryKey: ["psgc-city", code], enabled: !!code, queryFn: async (): Promise<PsgcCity | null> => {
+    const { data, error } = await supabase.from("psgc_cities").select("code,name,province_code,region_code").eq("code", code!).maybeSingle();
+    if (error) throw error; return (data ?? null) as PsgcCity | null;
   }});
 }

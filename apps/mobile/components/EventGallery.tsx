@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { View, Image, ScrollView, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Image, ScrollView, useWindowDimensions } from "react-native";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { ElevationHero } from "./ElevationHero";
+import { cn } from "@/lib/utils";
 
 /** Horizontal paging carousel of an event's images with a dots indicator.
  *  Falls back to the ElevationHero placeholder when there are no images. */
@@ -29,19 +30,12 @@ export function EventGallery({ images, height }: { images: (string | null | unde
         ))}
       </ScrollView>
       {urls.length > 1 ? (
-        <View style={styles.dots} pointerEvents="none">
+        <View className="absolute bottom-3 left-0 right-0 flex-row justify-center gap-1.5" pointerEvents="none">
           {urls.map((uri, i) => (
-            <View key={uri} style={[styles.dot, i === idx ? styles.dotOn : styles.dotOff]} />
+            <View key={uri} className={cn("h-[7px] w-[7px] rounded-[4px]", i === idx ? "bg-primary" : "bg-muted")} />
           ))}
         </View>
       ) : null}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  dots: { position: "absolute", bottom: 12, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 6 },
-  dot: { width: 7, height: 7, borderRadius: 4 },
-  dotOn: { backgroundColor: "#fff" },
-  dotOff: { backgroundColor: "rgba(255,255,255,0.5)" },
-});

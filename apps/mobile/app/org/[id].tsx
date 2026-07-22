@@ -1,10 +1,10 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useOrg, useEventsByOrg } from "../../lib/events";
 import { OrgHeader } from "../../components/OrgHeader";
 import { EventCard } from "../../components/EventCard";
-import { theme } from "../../lib/theme";
+import { Text } from "@/components/ui/text";
 
 export default function OrgPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,42 +13,38 @@ export default function OrgPage() {
   const org = useOrg(id);
   const events = useEventsByOrg(id);
 
-  if (org.isLoading) return <View style={styles.center}><ActivityIndicator color={theme.primary} /></View>;
-  if (!org.data) return <View style={styles.center}><Text style={styles.meta}>Organization not found.</Text></View>;
+  if (org.isLoading) return <View className="flex-1 items-center justify-center bg-background"><ActivityIndicator className="text-primary" /></View>;
+  if (!org.data) return <View className="flex-1 items-center justify-center bg-background"><Text className="text-muted-foreground text-[13px]">Organization not found.</Text></View>;
 
   return (
-    <View style={styles.c}>
+    <View className="flex-1 bg-background">
       <FlatList
-        style={styles.list}
+        className="flex-1 bg-background"
         data={events.data ?? []}
         keyExtractor={(e) => e.id}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerClassName="pb-8"
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>
             <OrgHeader org={org.data} eventCount={events.data?.length} />
-            <Text style={styles.section}>Events</Text>
+            <Text className="text-lg font-bold tracking-[-0.3px] px-[22px] mt-[22px] mb-3 text-foreground">Events</Text>
           </View>
         }
-        ListEmptyComponent={<Text style={styles.empty}>No events yet.</Text>}
+        ListEmptyComponent={<Text className="text-muted-foreground px-[22px]">No events yet.</Text>}
         renderItem={({ item }) => (
-          <View style={{ paddingHorizontal: 22 }}>
+          <View className="px-[22px]">
             <EventCard event={item} showOrg={false} onPress={() => router.push(`/event/${item.id}`)} />
           </View>
         )}
       />
-      <Pressable onPress={() => router.back()} style={[styles.backBtn, { top: insets.top + 4 }]} accessibilityRole="button"><Text style={styles.backIcon}>‹</Text></Pressable>
+      <Pressable
+        onPress={() => router.back()}
+        className="absolute left-[18px] w-9 h-9 rounded-full bg-white/90 items-center justify-center"
+        style={{ top: insets.top + 4 }}
+        accessibilityRole="button"
+      >
+        <Text className="text-[20px] text-[#1D1D1F] -mt-[2px]">‹</Text>
+      </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  c: { flex: 1, backgroundColor: theme.canvas },
-  list: { flex: 1, backgroundColor: theme.canvas },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.canvas },
-  section: { fontSize: 18, fontWeight: "700", letterSpacing: -0.3, color: theme.ink, paddingHorizontal: 22, marginTop: 22, marginBottom: 12 },
-  backBtn: { position: "absolute", left: 18, width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.9)", alignItems: "center", justifyContent: "center" },
-  backIcon: { fontSize: 20, color: theme.ink, marginTop: -2 },
-  meta: { color: theme.inkMuted, fontSize: 13 },
-  empty: { color: theme.inkMuted, paddingHorizontal: 22 },
-});

@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 255 255 255;      /* #FFFFFF */
+    --foreground: 29 29 31;         /* #1D1D1F */
+    --card: 255 255 255;
+    --card-foreground: 29 29 31;
+    --popover: 255 255 255;
+    --popover-foreground: 29 29 31;
+    --muted: 245 245 247;           /* #F5F5F7 */
+    --muted-foreground: 122 122 122;/* #7A7A7A */
+    --secondary: 234 243 238;       /* #EAF3EE */
+    --secondary-foreground: 15 122 66; /* #0F7A42 */
+    --accent: 234 243 238;
+    --accent-foreground: 15 122 66;
+    --primary: 21 154 85;           /* #159A55 */
+    --primary-foreground: 255 255 255;
+    --primary-focus: 15 122 66;     /* #0F7A42 */
+    --border: 224 224 224;          /* #E0E0E0 */
+    --divider: 239 239 241;         /* #EFEFF1 */
+    --input: 224 224 224;
+    --ring: 21 154 85;
+    --destructive: 255 59 48;       /* #FF3B30 */
+    --destructive-foreground: 255 255 255;
+    --destructive-tint: 253 236 234;/* #FDECEA */
+    --forest: 15 42 32;             /* #0F2A20 */
+    --paid: 15 122 66;      --paid-tint: 234 243 238;   /* #0F7A42 / #EAF3EE */
+    --info: 0 102 204;      --info-tint: 232 240 251;   /* #0066CC / #E8F0FB */
+    --amber: 180 83 9;      --amber-tint: 251 239 227;  /* #B45309 / #FBEFE3 */
+  }
+  .dark:root, .dark {
+    --background: 11 15 13;         /* #0B0F0D */
+    --foreground: 245 245 247;
+    --card: 20 25 22;              /* #141916 */
+    --card-foreground: 245 245 247;
+    --popover: 20 25 22;
+    --popover-foreground: 245 245 247;
+    --muted: 27 33 29;            /* #1B211D */
+    --muted-foreground: 161 161 166;/* #A1A1A6 */
+    --secondary: 19 37 28;        /* #13251C */
+    --secondary-foreground: 127 224 166; /* #7FE0A6 */
+    --accent: 19 37 28;
+    --accent-foreground: 127 224 166;
+    --primary: 47 181 106;        /* #2FB56A */
+    --primary-foreground: 6 18 11;
+    --primary-focus: 30 158 92;   /* #1E9E5C */
+    --border: 38 43 40;           /* #262B28 */
+    --divider: 38 43 40;
+    --input: 38 43 40;
+    --ring: 47 181 106;
+    --destructive: 255 69 58;     /* #FF453A */
+    --destructive-foreground: 255 255 255;
+    --destructive-tint: 42 20 20;
+    --forest: 15 42 32;
+    --paid: 53 192 110;   --paid-tint: 19 37 28;    /* #35C06E */
+    --info: 10 132 255;   --info-tint: 16 35 58;    /* #0A84FF */
+    --amber: 224 163 69;  --amber-tint: 42 33 19;   /* #E0A345 */
+  }
+}
