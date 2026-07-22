@@ -76,8 +76,18 @@ export async function saveEvent(args: {
   return { eventId: eventId!, childErrors };
 }
 
-export async function rescheduleEvent(id: string, currentDate: string | null, newDate: string, note: string): Promise<{ error?: string }> {
-  const r = await supabase.from("events").update({ original_date: currentDate, event_date: newDate, status_note: note || null }).eq("id", id);
+function daysBetween(a: string, b: string): number {
+  return Math.round((new Date(`${b}T00:00:00Z`).getTime() - new Date(`${a}T00:00:00Z`).getTime()) / 86400000);
+}
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+export async function rescheduleEvent(id: string, currentDate: string | null, currentEndDate: string | null, newDate: string, note: string): Promise<{ error?: string }> {
+  const newEndDate = currentEndDate && currentDate ? addDays(newDate, daysBetween(currentDate, currentEndDate)) : null;
+  const r = await supabase.from("events").update({ original_date: currentDate, event_date: newDate, end_date: newEndDate, status_note: note || null }).eq("id", id);
   return r.error ? { error: r.error.message } : {};
 }
 export async function cancelEvent(id: string, note: string): Promise<{ error?: string }> {
