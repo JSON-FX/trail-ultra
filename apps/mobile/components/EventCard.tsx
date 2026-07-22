@@ -16,7 +16,7 @@ export function EventCard({ event, showOrg = true, onPress }: { event: EventRow;
   const [imgFailed, setImgFailed] = useState(false);
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
-      <Card className="rounded-[18px] border border-border overflow-hidden bg-card mb-4 gap-0 py-0 shadow-none">
+      <Card className="rounded-[18px] border border-border overflow-hidden bg-card mb-4 gap-0 py-0 shadow-none shadow-transparent">
         <View>
           {event.hero_image_url && !imgFailed ? (
             <Image testID="event-card-image" source={{ uri: event.hero_image_url }} style={{ height: 132, width: "100%" }} resizeMode="cover" onError={() => setImgFailed(true)} />
