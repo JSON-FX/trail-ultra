@@ -4,6 +4,7 @@ import { Events } from "../routes/Events";
 vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1" } }) }));
 let mockQuery: { data?: unknown[]; isLoading: boolean; isError: boolean; refetch: () => void };
 vi.mock("../lib/events", async (orig) => ({ ...(await orig()), useOrgEvents: () => mockQuery }));
+vi.mock("../lib/registrations", () => ({ useEventRegistrationCounts: () => ({ data: {} }) }));
 // Events() now calls useNavigate/useQueryClient directly (row actions + "+ Create event"),
 // so it needs a Router + QueryClient ancestor — stub both, same pattern as event-editor.test.tsx.
 vi.mock("react-router-dom", async (orig) => ({ ...(await orig()), useNavigate: () => vi.fn() }));

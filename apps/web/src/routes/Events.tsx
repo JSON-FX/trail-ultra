@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { formatAddress } from "@race-pace/shared";
 import { useMyRoles } from "../lib/roles";
 import { useOrgEvents, type AdminEventRow } from "../lib/events";
+import { useEventRegistrationCounts } from "../lib/registrations";
 import { RescheduleModal } from "../components/RescheduleModal";
 import { CancelModal } from "../components/CancelModal";
 
@@ -36,11 +37,12 @@ function fmtDate(d: string | null) {
   return d ? new Date(d + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—";
 }
 
-const GRID = "2.4fr 1.2fr 1fr .9fr .8fr auto";
+const GRID = "2.4fr 1.1fr .9fr .8fr .7fr .7fr auto";
 
 export function Events() {
   const roles = useMyRoles();
   const { data, isLoading, isError, refetch } = useOrgEvents(roles.data?.orgId ?? undefined);
+  const counts = useEventRegistrationCounts(roles.data?.orgId ?? undefined);
   const nav = useNavigate();
   const qc = useQueryClient();
   const [menuId, setMenuId] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export function Events() {
 
       <div style={{ ...cardStyle, overflow: "hidden" }}>
         <div style={{ ...theadStyle, gridTemplateColumns: GRID }}>
-          <span>Event</span><span>Date</span><span>Status</span><span>Categories</span><span>Fill</span><span></span>
+          <span>Event</span><span>Date</span><span>Status</span><span>Categories</span><span>Fill</span><span>Regs</span><span></span>
         </div>
         {rows.length === 0 ? (
           <div style={{ padding: 20, color: "var(--ink-muted)", fontSize: 14, borderTop: "1px solid var(--row-border)" }}>No events yet.</div>
@@ -88,11 +90,13 @@ export function Events() {
               <div><StatusChip status={e.status} /></div>
               <div style={{ fontSize: 13 }}>{e.categories.length}</div>
               <div style={{ fontSize: 13 }}>{fill(e.categories)}</div>
+              <div style={{ fontSize: 13 }}>{counts.data?.[e.id] ?? 0}</div>
               <div style={{ position: "relative", textAlign: "right" }}>
                 <button aria-label={`Actions for ${e.name}`} onClick={() => setMenuId(menuId === e.id ? null : e.id)} style={{ background: "none", border: 0, cursor: "pointer", color: "var(--ink-muted)", fontSize: 18 }}>⋯</button>
                 {menuId === e.id ? (
                   <div style={{ position: "absolute", right: 0, top: 24, background: "var(--canvas)", border: "1px solid var(--hairline)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,.12)", zIndex: 20, minWidth: 140 }}>
                     <button style={menuItem} onClick={() => { setMenuId(null); nav(`/events/${e.id}/edit`); }}>Edit</button>
+                    <button style={menuItem} onClick={() => { setMenuId(null); nav(`/registrations?event=${e.id}`); }}>View registrations</button>
                     <button style={menuItem} onClick={() => { setMenuId(null); setModal({ kind: "reschedule", ev: e }); }}>Reschedule</button>
                     <button style={{ ...menuItem, color: "var(--danger)" }} onClick={() => { setMenuId(null); setModal({ kind: "cancel", ev: e }); }}>Cancel event</button>
                   </div>

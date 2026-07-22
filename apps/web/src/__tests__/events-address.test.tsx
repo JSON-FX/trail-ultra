@@ -8,6 +8,7 @@ const rows = [
   { id: "e2", name: "Legacy Race", place: "Mt Apo", city_name: null, province_name: null, event_date: "2026-10-01", status: "open", original_date: null, categories: [] },
 ];
 vi.mock("../lib/events", () => ({ useOrgEvents: () => ({ data: rows, isLoading: false, isError: false, refetch: vi.fn() }) }));
+vi.mock("../lib/registrations", () => ({ useEventRegistrationCounts: () => ({ data: {} }) }));
 vi.mock("@tanstack/react-query", async (orig) => ({ ...(await orig()), useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 
 it("shows the PSGC city for a structured row and the legacy place as fallback", () => {
