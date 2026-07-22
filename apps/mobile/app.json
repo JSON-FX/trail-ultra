@@ -16,7 +16,8 @@
         {
           "photosPermission": "Allow Race Pace to access your photos so you can set a profile and cover photo."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "ios": {
       "supportsTablet": true,

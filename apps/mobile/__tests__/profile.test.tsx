@@ -41,7 +41,7 @@ describe("Profile", () => {
 
   it("prefills passport fields (DOB, blood type, emergency) and saves the updated payload", async () => {
     render(<Profile />);
-    await waitFor(() => expect(screen.getByDisplayValue("1990-05-15")).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText("1990-05-15")).toBeOnTheScreen());  // DOB row is a date-picker button now
     expect(screen.getByDisplayValue("Jane 0917")).toBeOnTheScreen();  // emergency name (recombines on save)
     // Gender/shirt/blood are RNR Select dropdowns now; blood_type: "O+" in the saved payload proves the prefill.
     fireEvent.changeText(screen.getByLabelText("Full name"), "Juan Dela Cruz");  // edit → dirty → Save appears
