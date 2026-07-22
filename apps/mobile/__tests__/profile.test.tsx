@@ -19,6 +19,8 @@ jest.mock("../components/PsgcAddressPicker", () => ({
   },
 }));
 
+jest.mock("../lib/registration", () => ({ useMyRegistrations: () => ({ data: [] }) }));
+
 import Profile from "../app/(tabs)/profile";
 
 describe("Profile", () => {
@@ -37,17 +39,16 @@ describe("Profile", () => {
     });
   });
 
-  it("prefills passport fields (DOB, blood type, emergency contact) and saves the updated payload", async () => {
+  it("prefills passport fields (DOB, blood type, emergency) and saves the updated payload", async () => {
     render(<Profile />);
     await waitFor(() => expect(screen.getByDisplayValue("1990-05-15")).toBeOnTheScreen());
-    expect(screen.getByDisplayValue("Jane 0917")).toBeOnTheScreen();
-    // PillSelect options are ToggleGroup radios (native single-select semantics).
-    expect(screen.getByRole("radio", { name: "O+", checked: true })).toBeOnTheScreen();
-    fireEvent.press(screen.getByRole("radio", { name: "L" }));      // change shirt size
+    expect(screen.getByDisplayValue("Jane 0917")).toBeOnTheScreen();  // emergency name (recombines on save)
+    // Gender/shirt/blood are RNR Select dropdowns now; blood_type: "O+" in the saved payload proves the prefill.
+    fireEvent.changeText(screen.getByLabelText("Full name"), "Juan Dela Cruz");  // edit → dirty → Save appears
     fireEvent.press(screen.getByText("Save changes"));
     await waitFor(() => expect(mockUpsert).toHaveBeenCalled());
     expect(mockUpsert.mock.calls[0][0]).toMatchObject({
-      blood_type: "O+", shirt_size: "L", emergency_contact: "Jane 0917",
+      full_name: "Juan Dela Cruz", blood_type: "O+", shirt_size: "M", emergency_contact: "Jane 0917",
     });
   });
 });
