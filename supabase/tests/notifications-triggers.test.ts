@@ -16,6 +16,15 @@ async function latestNote(svc: ReturnType<typeof service>, userId: string) {
   const { data } = await svc.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
   return data?.[0];
 }
+async function cloneEvent(svc: ReturnType<typeof service>, over: Record<string, unknown>) {
+  const base = (await svc.from("events").select("*").eq("id", "00000000-0000-0000-0000-0000000000e1").single()).data!;
+  const { id: _i, created_at: _c, ...rest } = base;
+  return (await svc.from("events").insert({ ...rest, ...over }).select().single()).data!;
+}
+async function notesFor(svc: ReturnType<typeof service>, userId: string, type: string) {
+  const { data } = await svc.from("notifications").select("type").eq("user_id", userId).eq("type", type);
+  return data ?? [];
+}
 
 describe("notifications table", () => {
   it("is owner-scoped: a user reads only their own rows and can mark them read", async () => {
@@ -105,6 +114,41 @@ describe("registration trigger", () => {
     expect(n2?.type).toBe("paid");
 
     await svc.from("registrations").delete().eq("id", reg.data!.id);
+    await svc.auth.admin.deleteUser(runner.id);
+  });
+});
+
+describe("event-change trigger", () => {
+  it("notifies registrants on cancel/reschedule/complete and broadcasts new events on publish", async () => {
+    const svc = service();
+    const runner = await makeUser(`et_run_${Date.now()}@test.dev`);
+    const ev = await cloneEvent(svc, { name: `ET ${Date.now()}`, status: "open" });
+    await svc.from("registrations").insert({
+      org_id: ev.org_id, event_id: ev.id, category_id: "00000000-0000-0000-0000-0000000000c4",
+      user_id: runner.id, status: "paid", total_amount: 100000,
+    });
+
+    await svc.from("events").update({ original_date: "2026-01-01" }).eq("id", ev.id);
+    expect((await notesFor(svc, runner.id, "event_rescheduled")).length).toBe(1);
+    await svc.from("events").update({ status: "completed" }).eq("id", ev.id);
+    expect((await notesFor(svc, runner.id, "event_completed")).length).toBe(1);
+    await svc.from("events").update({ status: "cancelled" }).eq("id", ev.id);
+    expect((await notesFor(svc, runner.id, "event_cancelled")).length).toBe(1);
+
+    // publish a fresh event (draft -> open) broadcasts to the runner (a profile holder)
+    await svc.from("profiles").upsert({ id: runner.id, full_name: "Runner" });
+    const draft = await cloneEvent(svc, { name: `NEW ${Date.now()}`, status: "draft" });
+    await svc.from("events").update({ status: "open" }).eq("id", draft.id);
+    expect((await notesFor(svc, runner.id, "event_created")).length).toBeGreaterThanOrEqual(1);
+    // re-publish does not duplicate (dedup_key)
+    await svc.from("events").update({ status: "draft" }).eq("id", draft.id);
+    await svc.from("events").update({ status: "open" }).eq("id", draft.id);
+    expect((await notesFor(svc, runner.id, "event_created")).length).toBe(1);
+
+    await svc.from("notifications").delete().eq("user_id", runner.id);
+    // the publish broadcast created event_created rows for every profile — clear them by event
+    for (const e of [ev.id, draft.id]) await svc.from("notifications").delete().eq("data->>event_id", e);
+    for (const e of [ev.id, draft.id]) await svc.from("events").delete().eq("id", e);
     await svc.auth.admin.deleteUser(runner.id);
   });
 });
