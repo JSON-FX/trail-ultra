@@ -28,4 +28,11 @@ describe("RaceCard", () => {
     expect(onPay).toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalled();
   });
+
+  it("shows a Refunded badge and no pay/cancel actions for the refunded variant", () => {
+    render(<RaceCard variant="refunded" title="Cordillera Run" distanceKm={21} />);
+    expect(screen.getByText("Refunded")).toBeOnTheScreen();
+    expect(screen.queryByText("Complete payment")).toBeNull();
+    expect(screen.queryByText("Cancel")).toBeNull();
+  });
 });
