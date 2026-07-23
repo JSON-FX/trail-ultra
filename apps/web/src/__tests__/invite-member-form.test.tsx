@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-const inviteMember = vi.fn(() => Promise.resolve({ ok: true }));
+const inviteMember = vi.fn((..._a: unknown[]): Promise<{ ok: boolean; error?: string }> => Promise.resolve({ ok: true }));
 vi.mock("../lib/team", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../lib/team")>();
   return { ...actual, inviteMember: (...a: unknown[]) => inviteMember(...a) };

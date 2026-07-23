@@ -7,8 +7,8 @@ const members = [
   { user_id: "u1", email: "ana@x.com", full_name: "Ana", role: "admin" },
   { user_id: "u2", email: "ben@x.com", full_name: "Ben", role: "marshal" },
 ];
-const setMemberRole = vi.fn(() => Promise.resolve({ ok: true }));
-const removeMember = vi.fn(() => Promise.resolve({ ok: true }));
+const setMemberRole = vi.fn((..._a: unknown[]): Promise<{ ok: boolean; error?: string }> => Promise.resolve({ ok: true }));
+const removeMember = vi.fn((..._a: unknown[]): Promise<{ ok: boolean; error?: string }> => Promise.resolve({ ok: true }));
 vi.mock("../lib/team", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../lib/team")>();
   return {
