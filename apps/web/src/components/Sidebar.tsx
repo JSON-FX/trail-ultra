@@ -57,7 +57,7 @@ export function Sidebar() {
       </div>
 
       <div style={sectionStyle}>ORGANIZATION</div>
-      {ORG_ITEMS.map((it) => <NavItem key={it.to} {...it} />)}
+      {ORG_ITEMS.filter((it) => it.to !== "/team" || roles.data?.isOrgAdmin).map((it) => <NavItem key={it.to} {...it} />)}
 
       {roles.data?.isSuperAdmin ? (
         <>

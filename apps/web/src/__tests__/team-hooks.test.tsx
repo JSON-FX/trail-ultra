@@ -44,3 +44,10 @@ it("maps a 409 error to the last-admin message", async () => {
   expect(res.ok).toBe(false);
   expect(res.error).toMatch(/at least one admin/);
 });
+
+it("maps a 502 error to the invite-failed message", async () => {
+  (supabase.functions.invoke as unknown as { mockResolvedValueOnce: (v: unknown) => void }).mockResolvedValueOnce({ data: null, error: { context: { status: 502 } } });
+  const res = await inviteMember("a1", "x@x.com", "editor");
+  expect(res.ok).toBe(false);
+  expect(res.error).toMatch(/send the invite/i);
+});

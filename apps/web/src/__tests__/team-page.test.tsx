@@ -1,7 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useMyRoles } from "../lib/roles";
 
-vi.mock("../lib/roles", () => ({ useMyRoles: () => ({ data: { orgId: "a1", isAdmin: true } }) }));
+vi.mock("../lib/roles", () => ({ useMyRoles: vi.fn(() => ({ data: { orgId: "a1", isAdmin: true, isOrgAdmin: true } })) }));
 
 const members = [
   { user_id: "u1", email: "ana@x.com", full_name: "Ana", role: "admin" },
@@ -55,4 +56,11 @@ it("clears the error when the remove dialog is cancelled", async () => {
   expect(await screen.findByText("Couldn't remove the member.")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(screen.queryByText("Couldn't remove the member.")).toBeNull();
+});
+
+it("shows an admin-only notice for a non-org-admin (editor)", () => {
+  (useMyRoles as unknown as { mockReturnValueOnce: (v: unknown) => void }).mockReturnValueOnce({ data: { orgId: "a1", isAdmin: true, isOrgAdmin: false } });
+  wrap(<Team />);
+  expect(screen.getByText(/organization admins only/i)).toBeInTheDocument();
+  expect(screen.queryByText("Ana")).toBeNull();
 });

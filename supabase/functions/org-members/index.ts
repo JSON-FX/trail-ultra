@@ -22,6 +22,10 @@ async function findUserIdByEmail(db: Db, email: string): Promise<string | null> 
 }
 
 // Enforce one role per (user, org): clear existing rows, then insert the new one.
+// One role per (user, org): delete existing rows, then insert. Non-atomic (no txn),
+// so the migration adding a new role MUST be applied before this function is deployed
+// (else the insert fails after the delete, leaving the member role-less). Matches the
+// project's accepted non-atomic write pattern; bounded by the merge deploy order.
 async function setOrgRole(db: Db, orgId: string, userId: string, role: string): Promise<void> {
   const { error: delErr } = await db.from("user_roles").delete().eq("org_id", orgId).eq("user_id", userId);
   if (delErr) throw delErr;
@@ -78,7 +82,7 @@ Deno.serve(async (req) => {
       let userId = await findUserIdByEmail(db, email);
       if (!userId) {
         const { data: inv, error: invErr } = await db.auth.admin.inviteUserByEmail(email);
-        if (invErr || !inv?.user) return json({ error: "invite_failed" }, 400);
+        if (invErr || !inv?.user) return json({ error: "invite_failed" }, 502);
         userId = inv.user.id;
       }
 

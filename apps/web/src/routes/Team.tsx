@@ -29,6 +29,10 @@ export function Team() {
     else setRowError(res.error ?? "Couldn't remove the member.");
   }
 
+  if (roles.data && !roles.data.isOrgAdmin) {
+    return <div style={{ padding: 8, color: "var(--ink-muted)" }}>Team management is available to organization admins only.</div>;
+  }
+
   return (
     <div style={{ maxWidth: 760 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Team</h1>

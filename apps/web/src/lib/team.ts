@@ -19,6 +19,7 @@ function errorMessage(error: unknown): string {
   const status = (error as { context?: { status?: number } }).context?.status;
   return status === 403 ? "You don't have permission to manage this team."
     : status === 409 ? "An organization must keep at least one admin."
+    : status === 502 ? "Couldn't send the invite — try again."
     : status === 400 ? "That role can't be assigned."
     : "Something went wrong. Please try again.";
 }
