@@ -751,7 +751,8 @@ Deno.serve(async (req) => {
       if (!rid) return json({ ok: true, ignored: "no_registration_id" });
       const method = resource?.attributes?.payments?.[0]?.attributes?.source?.type ?? "paymongo";
       const r = await confirmPayment(rid, method, { source: "webhook", event: evt });
-      return json({ ok: r.ok, registration_id: (r as { registration_id?: string }).registration_id });
+      if (!r.ok) return json({ error: r.error }, r.status); // surface failures so PayMongo retries (don't 200 a stuck payment)
+      return json({ ok: true, registration_id: r.registration_id });
     }
 
     if (type === "refund.updated") {
@@ -763,10 +764,12 @@ Deno.serve(async (req) => {
       // deno-lint-ignore no-explicit-any
       const parked = (pay.raw as any)?.refund ?? {};
       if (status === "succeeded") {
-        await db.rpc("refund_registration_tx", { p_registration_id: pay.registration_id, p_refunded_by: parked.refunded_by ?? null, p_note: parked.note ?? null, p_provider_refund: resource });
+        const { error: rpcErr } = await db.rpc("refund_registration_tx", { p_registration_id: pay.registration_id, p_refunded_by: parked.refunded_by ?? null, p_note: parked.note ?? null, p_provider_refund: resource });
+        if (rpcErr) return json({ error: "refund_reconcile_failed" }, 500); // surface so PayMongo retries
       } else if (status === "failed") {
         const raw2 = { ...((pay.raw as Record<string, unknown>) ?? {}), refund: { ...parked, status: "failed" } };
-        await db.from("payments").update({ raw: raw2 }).eq("registration_id", pay.registration_id);
+        const { error: upErr } = await db.from("payments").update({ raw: raw2 }).eq("registration_id", pay.registration_id);
+        if (upErr) return json({ error: "refund_flag_failed" }, 500);
       }
       return json({ ok: true });
     }
