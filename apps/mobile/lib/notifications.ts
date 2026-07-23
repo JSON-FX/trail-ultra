@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { supabase } from "./supabase";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -66,4 +67,18 @@ export function useMarkAllRead() {
     },
     onSuccess: invalidate,
   });
+}
+
+export function useNotificationsRealtime(userId: string | undefined) {
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        () => { qc.invalidateQueries({ queryKey: KEY }); qc.invalidateQueries({ queryKey: UNREAD }); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, qc]);
 }
