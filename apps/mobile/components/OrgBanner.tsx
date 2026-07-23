@@ -1,11 +1,16 @@
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import Svg, { Rect, Polygon, Polyline } from "react-native-svg";
 
-// Dark-green ridge banner used on the org page header (matches the design's orgBannerSvg).
-// The outer surface uses the `forest` token; the SVG ridge fills/stroke stay literal
-// hex (react-native-svg primitives aren't NativeWind-styled in this codebase) but are
-// the same brand greens the token system defines (forest / a lighter tint / primary).
-export function OrgBanner({ height }: { height: number }) {
+// Org page header banner. Renders the uploaded cover photo when present; otherwise the
+// dark-green ridge fallback (matches the design's orgBannerSvg — forest / tint / primary).
+export function OrgBanner({ height, bannerUrl }: { height: number; bannerUrl?: string | null }) {
+  if (bannerUrl) {
+    return (
+      <View className="overflow-hidden bg-forest" style={{ height }}>
+        <Image source={{ uri: bannerUrl }} resizeMode="cover" style={{ width: "100%", height }} accessibilityLabel="Organization cover photo" />
+      </View>
+    );
+  }
   return (
     <View className="overflow-hidden bg-forest" style={{ height }}>
       <Svg width="100%" height="100%" viewBox="0 0 390 150" preserveAspectRatio="none">
