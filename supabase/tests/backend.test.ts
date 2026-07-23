@@ -343,6 +343,8 @@ describe("admin-refund", () => {
     // refund metadata recorded in payments.raw, and the ticket left intact
     const paidPay = await svc.from("payments").select("raw").eq("registration_id", rid).single();
     expect((paidPay.data?.raw as Record<string, unknown>)?.refunded_by).toBe(admin.id);
+    // A1: the provider refund result is recorded under payments.raw.provider_refund
+    expect((paidPay.data?.raw as Record<string, unknown>)?.provider_refund).toBeTruthy();
     const paidReg = await svc.from("registrations").select("ticket_token").eq("id", rid).single();
     expect(paidReg.data?.ticket_token).toBeTruthy();
     expect((await svc.from("categories").select("slots_taken").eq("id", C4_RF).single()).data!.slots_taken).toBe(before.data!.slots_taken);
