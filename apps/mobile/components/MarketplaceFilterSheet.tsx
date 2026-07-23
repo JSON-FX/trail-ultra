@@ -47,9 +47,9 @@ export function MarketplaceFilterSheet({ open, onOpenChange, filters, onApply, a
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        overlayClassName="justify-end p-0"
+        overlayClassName="justify-end items-stretch p-0"
         showCloseButton={false}
-        className="rounded-b-none rounded-t-[22px] mx-0 w-full max-w-full max-h-[80%] gap-0"
+        className="rounded-b-none rounded-t-[22px] mx-0 w-full max-w-full min-h-[420px] max-h-[80%] gap-0"
       >
         <View className="w-9 h-1 rounded-full bg-border self-center mb-3" />
 

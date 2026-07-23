@@ -121,7 +121,7 @@ export default function Marketplace() {
             <Pressable
               onPress={() => setFilters((f) => ({ ...f, showPast: !f.showPast }))}
               accessibilityRole="button"
-              className="flex-row items-center justify-between mt-5"
+              className="flex-row items-center justify-between mt-5 pb-3 border-b border-divider"
             >
               <Text className="text-[13px] font-bold uppercase tracking-[0.6px] text-muted-foreground">Past events</Text>
               <Text className="text-[12.5px] font-semibold text-primary">{filters.showPast ? "Hide" : "Show"}</Text>
