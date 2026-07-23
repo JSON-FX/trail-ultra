@@ -12,13 +12,18 @@ Deno.serve(async (req) => {
   if (auth !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return json({ error: "unauthorized" }, 401);
 
   const db = serviceClient();
-  const { data: notes } = await db.from("notifications")
+  const { data: notes, error: notesError } = await db.from("notifications")
     .select("id,user_id,type,title,body,data").is("push_sent_at", null)
     .order("created_at", { ascending: true }).limit(200);
+  if (notesError) {
+    console.error("send-push: pending-notifications select failed", notesError);
+    return json({ error: "query failed" }, 500);
+  }
   if (!notes || notes.length === 0) return json({ sent: 0 });
 
   const userIds = [...new Set(notes.map((n) => n.user_id))];
-  const { data: tokenRows } = await db.from("device_tokens").select("user_id,token").in("user_id", userIds);
+  const { data: tokenRows, error: tokensError } = await db.from("device_tokens").select("user_id,token").in("user_id", userIds);
+  if (tokensError) console.error("send-push: device_tokens select failed", tokensError);
   const tokensByUser = new Map<string, string[]>();
   for (const r of tokenRows ?? []) tokensByUser.set(r.user_id, [...(tokensByUser.get(r.user_id) ?? []), r.token]);
 
@@ -29,13 +34,19 @@ Deno.serve(async (req) => {
       const res = await fetch("https://exp.host/--/api/v2/push/send", {
         method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(batch),
       });
+      if (!res.ok) console.warn("send-push: expo returned", res.status);
       const body = await res.json().catch(() => ({ data: [] }));
       allDead.push(...deadTokens(batch, (body.data ?? []) as ExpoTicket[]));
     } catch { /* leave push_sent_at set; realtime already delivered in-app */ }
   }
 
   // Best-effort: mark every drained row sent so the queue never clogs (tokenless users included).
-  await db.from("notifications").update({ push_sent_at: new Date().toISOString() }).in("id", notes.map((n) => n.id));
-  if (allDead.length) await db.from("device_tokens").delete().in("token", [...new Set(allDead)]);
+  const { error: updateError } = await db.from("notifications")
+    .update({ push_sent_at: new Date().toISOString() }).in("id", notes.map((n) => n.id));
+  if (updateError) console.error("send-push: push_sent_at update failed", updateError);
+  if (allDead.length) {
+    const { error: deleteError } = await db.from("device_tokens").delete().in("token", [...new Set(allDead)]);
+    if (deleteError) console.error("send-push: device_tokens delete failed", deleteError);
+  }
   return json({ sent: messages.length, pruned: allDead.length });
 });
