@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 
+const PAST_EVENTS_TITLE = "Past events";
+
 function todayIsoNow(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -34,25 +36,37 @@ export default function Marketplace() {
 
   const allEvents = data ?? [];
 
-  const filtered = useMemo(() => {
-    const byFilters = filterMarketplaceEvents(allEvents, filters, todayIso);
+  function search(list: typeof allEvents) {
     const needle = q.trim().toLowerCase();
-    if (!needle) return byFilters;
-    return byFilters.filter((e) =>
+    if (!needle) return list;
+    return list.filter((e) =>
       [e.name, e.place, e.region, e.city_name, e.province_name, e.region_name, e.org_name].filter(Boolean).some((s) => s!.toLowerCase().includes(needle))
     );
-  }, [allEvents, filters, q, todayIso]);
+  }
 
-  const featured = useMemo(
-    () => (filters.showPast ? [] : pickFeaturedEvents(filtered, todayIso)),
-    [filtered, filters.showPast, todayIso]
+  // Upcoming and past are computed independently (not as an either/or mode
+  // switch) so the scroll order is always upcoming -> current -> past, with
+  // past appended at the very end rather than replacing the list above it.
+  const upcoming = useMemo(
+    () => search(filterMarketplaceEvents(allEvents, { ...filters, showPast: false }, todayIso)),
+    [allEvents, filters, q, todayIso]
   );
+  const past = useMemo(
+    () => search(filterMarketplaceEvents(allEvents, { ...filters, showPast: true }, todayIso)),
+    [allEvents, filters, q, todayIso]
+  );
+
+  const featured = useMemo(() => pickFeaturedEvents(upcoming, todayIso), [upcoming, todayIso]);
   const featuredIds = useMemo(() => new Set(featured.map((e) => e.id)), [featured]);
-  const listEvents = useMemo(() => filtered.filter((e) => !featuredIds.has(e.id)), [filtered, featuredIds]);
+  const listEvents = useMemo(() => upcoming.filter((e) => !featuredIds.has(e.id)), [upcoming, featuredIds]);
+  const upcomingSections = useMemo(
+    () => groupEventsForDisplay(listEvents, filters.dateSegment, todayIso),
+    [listEvents, filters.dateSegment, todayIso]
+  );
   const sections = useMemo(() => {
-    if (filters.showPast) return listEvents.length ? [{ title: null, data: listEvents }] : [];
-    return groupEventsForDisplay(listEvents, filters.dateSegment, todayIso);
-  }, [listEvents, filters.dateSegment, filters.showPast, todayIso]);
+    if (!filters.showPast || past.length === 0) return upcomingSections;
+    return [...upcomingSections, { title: PAST_EVENTS_TITLE, data: past }];
+  }, [upcomingSections, past, filters.showPast]);
 
   function clearFilters() {
     setFilters(DEFAULT_MARKETPLACE_FILTERS);
@@ -77,7 +91,8 @@ export default function Marketplace() {
     );
   }
 
-  const hasActiveFilters = countActiveFilters(filters) > 0 || filters.dateSegment !== "all" || filters.showPast;
+  const hasActiveFilters = countActiveFilters(filters) > 0 || filters.dateSegment !== "all";
+  const pastSectionShown = sections.some((s) => s.title === PAST_EVENTS_TITLE);
 
   return (
     <>
@@ -111,31 +126,43 @@ export default function Marketplace() {
               onPressMoreFilters={() => setSheetOpen(true)}
             />
 
-            {!filters.showPast && featured.length > 0 ? (
+            {featured.length > 0 ? (
               <View className="mt-5">
                 <Text className="text-[13px] font-bold uppercase tracking-[0.6px] text-muted-foreground mb-3">Coming up soon</Text>
                 <FeaturedCarousel events={featured} onPressEvent={(e) => router.push(`/event/${e.id}`)} />
               </View>
             ) : null}
-
-            <Pressable
-              onPress={() => setFilters((f) => ({ ...f, showPast: !f.showPast }))}
-              accessibilityRole="button"
-              className="flex-row items-center justify-between mt-5 pb-3 border-b border-divider"
-            >
-              <Text className="text-[13px] font-bold uppercase tracking-[0.6px] text-muted-foreground">Past events</Text>
-              <Text className="text-[12.5px] font-semibold text-primary">{filters.showPast ? "Hide" : "Show"}</Text>
-            </Pressable>
           </View>
         }
         renderSectionHeader={({ section }) =>
-          section.title ? (
+          section.title === PAST_EVENTS_TITLE ? (
+            <Pressable
+              onPress={() => setFilters((f) => ({ ...f, showPast: false }))}
+              accessibilityRole="button"
+              className="flex-row items-center justify-between mt-2 pt-4 pb-3 border-t border-divider"
+            >
+              <Text className="text-[13px] font-bold uppercase tracking-[0.6px] text-muted-foreground">Past events</Text>
+              <Text className="text-[12.5px] font-semibold text-primary">Hide</Text>
+            </Pressable>
+          ) : section.title ? (
             <View className="flex-row items-center gap-[10px] my-3">
               <View className="flex-1 h-px bg-divider" />
               <Text className="text-[12.5px] font-bold text-muted-foreground">{section.title}</Text>
               <View className="flex-1 h-px bg-divider" />
             </View>
           ) : null
+        }
+        ListFooterComponent={
+          pastSectionShown ? null : (
+            <Pressable
+              onPress={() => setFilters((f) => ({ ...f, showPast: !f.showPast }))}
+              accessibilityRole="button"
+              className="flex-row items-center justify-between mt-5 pt-4 border-t border-divider"
+            >
+              <Text className="text-[13px] font-bold uppercase tracking-[0.6px] text-muted-foreground">Past events</Text>
+              <Text className="text-[12.5px] font-semibold text-primary">{filters.showPast ? "Hide" : "Show"}</Text>
+            </Pressable>
+          )
         }
         ListEmptyComponent={
           <View className="items-center pt-20">
