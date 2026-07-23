@@ -33,4 +33,11 @@ describe("wouldLeaveNoAdmin", () => {
   it("allows removing a non-admin", () => {
     expect(wouldLeaveNoAdmin(roles, "b", null)).toBe(false);
   });
+  it("blocks (fail-safe) when the roles list is empty", () => {
+    expect(wouldLeaveNoAdmin([], "z", null)).toBe(true);
+  });
+  it("treats duplicate role rows for one user as that single user", () => {
+    const dup = [{ user_id: "a", role: "admin" }, { user_id: "a", role: "admin" }];
+    expect(wouldLeaveNoAdmin(dup, "a", "editor")).toBe(true); // demoting the only admin, even with dup rows
+  });
 });
