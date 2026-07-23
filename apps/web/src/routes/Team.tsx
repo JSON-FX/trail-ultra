@@ -58,13 +58,13 @@ export function Team() {
       {rowError && !pendingRemove ? <div role="alert" style={{ color: "var(--danger)", fontSize: 13, marginTop: 10 }}>{rowError}</div> : null}
 
       {pendingRemove ? (
-        <div role="dialog" aria-label="Confirm remove" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div role="dialog" aria-label="Confirm remove" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
           <div style={{ background: "var(--canvas)", borderRadius: 14, padding: 22, width: 340 }}>
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Remove this member?</div>
             <div style={{ fontSize: 13, color: "var(--ink-muted)", marginBottom: 16 }}>{pendingRemove.email} loses access to this organization. Their account isn't deleted.</div>
             {rowError ? <div role="alert" style={{ color: "var(--danger)", fontSize: 13, marginBottom: 10 }}>{rowError}</div> : null}
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => setPendingRemove(null)} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid var(--hairline)", background: "none", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => { setPendingRemove(null); setRowError(null); }} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid var(--hairline)", background: "none", cursor: "pointer" }}>Cancel</button>
               <button onClick={confirmRemove} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "var(--danger)", color: "#fff", fontWeight: 600, cursor: "pointer" }}>Remove member</button>
             </div>
           </div>

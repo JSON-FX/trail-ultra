@@ -46,3 +46,13 @@ it("removes a member after confirming in the dialog", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Remove member" }));
   await waitFor(() => expect(removeMember).toHaveBeenCalledWith("a1", "u2"));
 });
+
+it("clears the error when the remove dialog is cancelled", async () => {
+  removeMember.mockResolvedValueOnce({ ok: false, error: "Couldn't remove the member." });
+  wrap(<Team />);
+  fireEvent.click(screen.getByLabelText("Remove ben@x.com"));
+  fireEvent.click(screen.getByRole("button", { name: "Remove member" }));
+  expect(await screen.findByText("Couldn't remove the member.")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(screen.queryByText("Couldn't remove the member.")).toBeNull();
+});
