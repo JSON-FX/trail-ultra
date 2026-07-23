@@ -7,9 +7,10 @@ describe("OrgAvatar", () => {
     render(<OrgAvatar name="Muspo Trail" color="#159A55" size={48} />);
     expect(screen.getByText("MT")).toBeOnTheScreen();
   });
-  it("still renders (with the initials fallback) when a logo URL is provided", () => {
+  it("renders the logo image and hides the initials when logoUrl is set", () => {
     render(<OrgAvatar name="Muspo Trail" logoUrl="https://cdn/x.png" size={48} />);
-    expect(screen.getByText("MT")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Organization logo")).toBeOnTheScreen();
+    expect(screen.queryByText("MT")).toBeNull();
   });
 });
 

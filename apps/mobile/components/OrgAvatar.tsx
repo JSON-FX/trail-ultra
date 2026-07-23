@@ -17,7 +17,7 @@ export function OrgAvatar({ name, color, size = 24, radius, logoUrl }: {
   const borderRadius = radius ?? size / 2;
   return (
     <Avatar alt={name ? `${name} logo` : "Organization logo"} style={{ width: size, height: size, borderRadius }}>
-      {logoUrl ? <AvatarImage source={{ uri: logoUrl }} style={{ borderRadius }} /> : null}
+      {logoUrl ? <AvatarImage source={{ uri: logoUrl }} accessibilityLabel="Organization logo" style={{ borderRadius }} /> : null}
       <AvatarFallback style={{ backgroundColor: color || "#159A55" /* trail-green brand default */, borderRadius }}>
         <Text style={{ color: "#fff", fontWeight: "700", fontSize: Math.max(9, Math.round(size * 0.4)) }}>{initials(name)}</Text>
       </AvatarFallback>
