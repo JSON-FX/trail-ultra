@@ -9,6 +9,7 @@ const ORG_ITEMS = [
   { to: "/registrations", label: "Registrations" },
   { to: "/payments", label: "Payments" },
   { to: "/check-in", label: "Check-in" },
+  { to: "/team", label: "Team" },
   { to: "/settings", label: "Settings" },
 ];
 const SUPER_ITEMS = [
