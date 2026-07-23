@@ -173,3 +173,25 @@ describe("check-in trigger", () => {
     await svc.auth.admin.deleteUser(runner.id);
   });
 });
+
+describe("event reminders", () => {
+  it("enqueues 7-day + 1-day reminders once (idempotent) for paid registrants", async () => {
+    const svc = service();
+    const runner = await makeUser(`rm_run_${Date.now()}@test.dev`);
+    const inDays = (n: number) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+    const ev = await cloneEvent(svc, { name: `RM ${Date.now()}`, status: "open", event_date: inDays(7) });
+    await svc.from("registrations").insert({
+      org_id: ev.org_id, event_id: ev.id, category_id: "00000000-0000-0000-0000-0000000000c4",
+      user_id: runner.id, status: "paid", total_amount: 100000,
+    });
+
+    await svc.rpc("fn_enqueue_event_reminders");
+    await svc.rpc("fn_enqueue_event_reminders"); // second run must not duplicate
+    const { data } = await svc.from("notifications").select("id").eq("user_id", runner.id).eq("type", "event_reminder");
+    expect(data).toHaveLength(1); // 7 days out today → exactly one reminder
+
+    await svc.from("notifications").delete().eq("user_id", runner.id);
+    await svc.from("events").delete().eq("id", ev.id);
+    await svc.auth.admin.deleteUser(runner.id);
+  });
+});
