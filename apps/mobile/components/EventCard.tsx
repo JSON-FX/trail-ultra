@@ -59,7 +59,7 @@ export function EventCard({ event, showOrg = true, onPress }: { event: EventRow;
         <View className="absolute top-3 left-3"><StatusBadge event={event} /></View>
         {showOrg && event.org_name ? (
           <View className="absolute top-3 right-3">
-            <OrgAvatar name={event.org_name} color={event.org_color} size={30} radius={9} />
+            <OrgAvatar name={event.org_name} color={event.org_color} size={38} radius={11} />
           </View>
         ) : null}
 
