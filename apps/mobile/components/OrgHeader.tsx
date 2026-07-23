@@ -8,10 +8,10 @@ export function OrgHeader({ org, eventCount }: { org: OrgRow; eventCount?: numbe
   const count = eventCount ?? org.event_count ?? 0;
   return (
     <View>
-      <OrgBanner height={170} />
+      <OrgBanner height={170} bannerUrl={org.banner_url} />
       <View className="px-[22px]">
         <View className="-mt-[42px] self-start rounded-[26px] border-4 border-background bg-background">
-          <OrgAvatar name={org.name} color={org.brand_color} size={84} radius={22} />
+          <OrgAvatar name={org.name} color={org.brand_color} size={84} radius={22} logoUrl={org.logo_url} />
         </View>
         <Text className="mt-3 text-[23px] font-bold tracking-[-0.4px] text-foreground">{org.name}</Text>
         <Text className="mt-[3px] text-[13px] text-muted-foreground">{count} {count === 1 ? "event" : "events"}</Text>

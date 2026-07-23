@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Initials are a fixed-white, dynamically-sized overlay on a saturated org
 // color — use plain RN Text, not @/components/ui/text (its base text-foreground
 // + text-base classes would fight the inline white color and font size).
@@ -11,12 +11,13 @@ export function initials(name?: string | null): string {
   return (two || words[0]?.slice(0, 2) || "?").toUpperCase();
 }
 
-export function OrgAvatar({ name, color, size = 24, radius }: {
-  name?: string | null; color?: string | null; size?: number; radius?: number;
+export function OrgAvatar({ name, color, size = 24, radius, logoUrl }: {
+  name?: string | null; color?: string | null; size?: number; radius?: number; logoUrl?: string | null;
 }) {
   const borderRadius = radius ?? size / 2;
   return (
     <Avatar alt={name ? `${name} logo` : "Organization logo"} style={{ width: size, height: size, borderRadius }}>
+      {logoUrl ? <AvatarImage source={{ uri: logoUrl }} accessibilityLabel="Organization logo" style={{ borderRadius }} /> : null}
       <AvatarFallback style={{ backgroundColor: color || "#159A55" /* trail-green brand default */, borderRadius }}>
         <Text style={{ color: "#fff", fontWeight: "700", fontSize: Math.max(9, Math.round(size * 0.4)) }}>{initials(name)}</Text>
       </AvatarFallback>
