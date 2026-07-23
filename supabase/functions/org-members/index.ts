@@ -23,11 +23,15 @@ async function findUserIdByEmail(db: Db, email: string): Promise<string | null> 
 
 // Enforce one role per (user, org): clear existing rows, then insert the new one.
 async function setOrgRole(db: Db, orgId: string, userId: string, role: string): Promise<void> {
-  await db.from("user_roles").delete().eq("org_id", orgId).eq("user_id", userId);
+  const { error: delErr } = await db.from("user_roles").delete().eq("org_id", orgId).eq("user_id", userId);
+  if (delErr) throw delErr;
   const { error } = await db.from("user_roles").insert({ org_id: orgId, user_id: userId, role });
   if (error) throw error;
 }
 
+// Note: the last-admin guard reads a roles snapshot then writes in a separate round-trip
+// (no txn), so it is best-effort under concurrent team edits — consistent with this
+// project's accepted non-atomic write pattern. It closes the single-request bypass.
 Deno.serve(async (req) => {
   try {
     const jwt = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
@@ -51,7 +55,8 @@ Deno.serve(async (req) => {
     if (!canManage) return json({ error: "forbidden" }, 403);
 
     if (action === "list") {
-      const { data: rows } = await db.from("user_roles").select("user_id,role,created_at").eq("org_id", orgId);
+      const { data: rows, error: listErr } = await db.from("user_roles").select("user_id,role,created_at").eq("org_id", orgId);
+      if (listErr) return json({ error: "server_error" }, 500);
       const seen = new Set<string>();
       const members: unknown[] = [];
       for (const r of rows ?? []) {
@@ -76,6 +81,12 @@ Deno.serve(async (req) => {
         if (invErr || !inv?.user) return json({ error: "invite_failed" }, 400);
         userId = inv.user.id;
       }
+
+      // Re-inviting an existing member (e.g. the sole admin) to a lower role must not
+      // strand the org — same last-admin guard as setRole. Harmless for a brand-new
+      // invitee (no prior role, so it only fires when it genuinely would leave 0 admins).
+      const { data: orgRoles } = await db.from("user_roles").select("user_id,role").eq("org_id", orgId);
+      if (wouldLeaveNoAdmin(orgRoles ?? [], userId, role)) return json({ error: "last_admin" }, 409);
       await setOrgRole(db, orgId, userId, role);
       return json({ ok: true, member: { user_id: userId, email, role } });
     }
@@ -98,7 +109,8 @@ Deno.serve(async (req) => {
 
       const { data: orgRoles } = await db.from("user_roles").select("user_id,role").eq("org_id", orgId);
       if (wouldLeaveNoAdmin(orgRoles ?? [], userId, null)) return json({ error: "last_admin" }, 409);
-      await db.from("user_roles").delete().eq("org_id", orgId).eq("user_id", userId);
+      const { error } = await db.from("user_roles").delete().eq("org_id", orgId).eq("user_id", userId);
+      if (error) return json({ error: "server_error" }, 500);
       return json({ ok: true });
     }
 
