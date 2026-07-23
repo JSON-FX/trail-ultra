@@ -12,6 +12,10 @@ async function makeUser(email: string) {
   const s = await anon().auth.signInWithPassword({ email, password: "password123" });
   return { id: c.data.user!.id, token: s.data.session!.access_token };
 }
+async function latestNote(svc: ReturnType<typeof service>, userId: string) {
+  const { data } = await svc.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
+  return data?.[0];
+}
 
 describe("notifications table", () => {
   it("is owner-scoped: a user reads only their own rows and can mark them read", async () => {
@@ -78,6 +82,28 @@ describe("checkins table", () => {
     expect(bad.error).not.toBeNull();
 
     await svc.from("checkins").delete().eq("registration_id", reg.data!.id);
+    await svc.from("registrations").delete().eq("id", reg.data!.id);
+    await svc.auth.admin.deleteUser(runner.id);
+  });
+});
+
+describe("registration trigger", () => {
+  it("emits 'registered' on a new pending registration and 'paid' on the paid transition", async () => {
+    const svc = service();
+    const runner = await makeUser(`rt_run_${Date.now()}@test.dev`);
+    const reg = await svc.from("registrations").insert({
+      org_id: "00000000-0000-0000-0000-0000000000a1", event_id: "00000000-0000-0000-0000-0000000000e1",
+      category_id: "00000000-0000-0000-0000-0000000000c4", user_id: runner.id, status: "pending", total_amount: 100000,
+    }).select().single();
+
+    const n1 = await latestNote(svc, runner.id);
+    expect(n1?.type).toBe("registered");
+    expect(n1?.data.registration_id).toBe(reg.data!.id);
+
+    await svc.from("registrations").update({ status: "paid" }).eq("id", reg.data!.id);
+    const n2 = await latestNote(svc, runner.id);
+    expect(n2?.type).toBe("paid");
+
     await svc.from("registrations").delete().eq("id", reg.data!.id);
     await svc.auth.admin.deleteUser(runner.id);
   });
