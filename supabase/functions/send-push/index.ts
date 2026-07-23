@@ -6,10 +6,14 @@ function json(body: unknown, status = 200): Response {
 }
 
 // Drains pending notifications and delivers them as Expo push. Invoked every minute by
-// pg_cron via pg_net with the service-role key in the Authorization header (verify_jwt=false).
+// pg_cron via pg_net with a dedicated PUSH_CRON_SECRET in the Authorization header
+// (verify_jwt=false). A dedicated secret (set on both the function env and the Vault entry
+// the drain reads) avoids depending on SUPABASE_SERVICE_ROLE_KEY, which is not guaranteed to
+// equal the dashboard's service_role key under Supabase's newer API-key model.
 Deno.serve(async (req) => {
   const auth = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-  if (auth !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return json({ error: "unauthorized" }, 401);
+  const expected = Deno.env.get("PUSH_CRON_SECRET");
+  if (!expected || auth !== expected) return json({ error: "unauthorized" }, 401);
 
   const db = serviceClient();
   const { data: notes, error: notesError } = await db.from("notifications")
