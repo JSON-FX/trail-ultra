@@ -23,6 +23,16 @@ jest.mock("../lib/useGlobalRefresh", () => ({ useGlobalRefresh: () => ({ refresh
 import Marketplace from "../app/(tabs)/events";
 
 describe("Marketplace search", () => {
+  // The screen derives "today" from the real clock (todayIsoNow() -> new
+  // Date()), so pin it well before mockEvent's 2026-11-14 date — otherwise
+  // this suite silently starts failing once that date passes.
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2026-07-23T12:00:00"));
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("matches on standardized PSGC city/province fields, not just legacy place/region", () => {
     render(<Marketplace />);
     const input = screen.getByPlaceholderText("Search by name or place");
