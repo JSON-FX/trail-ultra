@@ -152,3 +152,24 @@ describe("event-change trigger", () => {
     await svc.auth.admin.deleteUser(runner.id);
   });
 });
+
+describe("check-in trigger", () => {
+  it("emits 'checked_in' to the registrant when a check-in row is inserted", async () => {
+    const svc = service();
+    const runner = await makeUser(`ck_run_${Date.now()}@test.dev`);
+    const reg = await svc.from("registrations").insert({
+      org_id: "00000000-0000-0000-0000-0000000000a1", event_id: "00000000-0000-0000-0000-0000000000e1",
+      category_id: "00000000-0000-0000-0000-0000000000c4", user_id: runner.id, status: "paid", total_amount: 100000,
+    }).select().single();
+    await svc.from("checkins").insert({
+      org_id: reg.data!.org_id, registration_id: reg.data!.id, event_id: reg.data!.event_id, checked_in_by: runner.id,
+    });
+    const n = await latestNote(svc, runner.id);
+    expect(n?.type).toBe("checked_in");
+    expect(n?.data.registration_id).toBe(reg.data!.id);
+
+    await svc.from("checkins").delete().eq("registration_id", reg.data!.id);
+    await svc.from("registrations").delete().eq("id", reg.data!.id);
+    await svc.auth.admin.deleteUser(runner.id);
+  });
+});
