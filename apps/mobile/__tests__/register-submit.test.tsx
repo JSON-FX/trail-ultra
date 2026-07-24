@@ -18,6 +18,7 @@ jest.mock("../lib/events", () => ({
     { id: "f2", key: "running_club", label: "Club", type: "text", required: false, options: null, sort_order: 2 },
   ], isLoading: false }),
   useAddons: () => ({ data: [{ id: "d1", name: "Singlet", price: 60000 }], isLoading: false }),
+  useEvent: () => ({ data: { id: "e1", name: "Apo Sky Ultra", event_date: "2026-11-14", end_date: null, org_name: "Race Pace" }, isLoading: false }),
 }));
 
 import Register from "../app/register/[categoryId]";
@@ -32,11 +33,12 @@ describe("Register submit", () => {
 
   it("submits a passport snapshot (blood_type from profile) to checkout", async () => {
     render(<Register />);
-    await waitFor(() => expect(screen.getByDisplayValue("Jane 0917 000 0000")).toBeOnTheScreen());
-    fireEvent.press(screen.getByText("Register"));                    // waiver not accepted yet
+    // Wait for the passport prefill to settle (blood type pill lands on the profile's O+).
+    await waitFor(() => expect(screen.getByRole("radio", { name: "O+", checked: true })).toBeOnTheScreen());
+    fireEvent.press(screen.getByLabelText("Register"));               // waiver not accepted yet
     await waitFor(() => expect(screen.getByText("You must accept the waiver.")).toBeOnTheScreen());
     fireEvent.press(screen.getByLabelText("Accept waiver"));
-    fireEvent.press(screen.getByText("Register"));
+    fireEvent.press(screen.getByLabelText("Register"));
     await waitFor(() => expect(mockStartCheckout).toHaveBeenCalled());
     const arg = mockStartCheckout.mock.calls[0][0];
     expect(arg).toMatchObject({
