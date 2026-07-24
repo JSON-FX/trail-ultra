@@ -22,6 +22,8 @@ export interface CreateSessionInput {
   successUrl: string;
   cancelUrl: string;
   metadata?: Record<string, string>;
+  // Prefills the "Customer Information" fields on the hosted checkout page.
+  billing?: { name?: string; email?: string; phone?: string };
 }
 
 export interface PmSession { id: string; checkoutUrl: string; paid: boolean; status: string; raw: unknown }
@@ -55,6 +57,7 @@ export async function pmCreateCheckoutSession(input: CreateSessionInput): Promis
           success_url: input.successUrl,
           cancel_url: input.cancelUrl,
           metadata: input.metadata,
+          billing: input.billing,
         },
       },
     }),
