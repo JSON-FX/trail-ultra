@@ -8,6 +8,8 @@ export type CachedTicket = {
   runnerName: string;
   status: string;
   orgId: string;
+  orgName?: string | null;
+  eventHeroUrl?: string | null;
 };
 
 const tKey = (rid: string) => `ticket:${rid}`;

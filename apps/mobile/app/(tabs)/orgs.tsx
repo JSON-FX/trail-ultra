@@ -73,7 +73,7 @@ export default function Orgs() {
             onPress={() => router.push(`/org/${item.id}`)}
             accessibilityRole="button"
           >
-            <OrgAvatar name={item.name} color={item.brand_color} size={48} radius={14} />
+            <OrgAvatar name={item.name} color={item.brand_color} logoUrl={item.logo_url} size={48} radius={14} />
             <View className="flex-1">
               <Text className="text-[15px] font-semibold text-foreground">{item.name}</Text>
               <Text className="text-[13px] text-muted-foreground mt-0.5">{count} {count === 1 ? "event" : "events"}</Text>

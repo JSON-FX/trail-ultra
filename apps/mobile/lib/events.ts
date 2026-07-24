@@ -7,7 +7,7 @@ export type EventRow = {
   status: string; hero_image_url: string | null; description: string | null;
   gallery: string[]; original_date: string | null; status_note: string | null;
   city_psgc_code: string | null; region_name: string | null; province_name: string | null; city_name: string | null; venue: string | null;
-  joined_count: number; distances: number[]; org_name?: string; org_color?: string | null;
+  joined_count: number; distances: number[]; org_name?: string; org_color?: string | null; org_logo_url?: string | null;
 };
 export type OrgRow = {
   id: string; name: string; slug: string;
@@ -34,12 +34,12 @@ function mapEvent(r: any): EventRow {
   const categories = (r.categories ?? []) as { slots_taken: number; distance_km: number | null }[];
   const joined_count = categories.reduce((sum, c) => sum + c.slots_taken, 0);
   const distances = categories.map((c) => c.distance_km).filter((d): d is number => d != null);
-  return { ...r, gallery: r.gallery ?? [], joined_count, distances, org_name: r.organizations?.name, org_color: r.organizations?.brand_color };
+  return { ...r, gallery: r.gallery ?? [], joined_count, distances, org_name: r.organizations?.name, org_color: r.organizations?.brand_color, org_logo_url: r.organizations?.logo_url };
 }
 
-// Marketplace: every org's non-draft events (RLS enforces non-draft), with org name + color for the card.
+// Marketplace: every org's non-draft events (RLS enforces non-draft), with org name + color + logo for the card.
 export async function fetchMarketplaceEvents(): Promise<EventRow[]> {
-  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color)`).order("event_date");
+  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color,logo_url)`).order("event_date");
   if (error) throw error;
   return (data ?? []).map(mapEvent);
 }
@@ -57,7 +57,7 @@ export function useEventsByOrg(orgId: string) {
 }
 
 export async function fetchEvent(eventId: string): Promise<EventRow | null> {
-  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color)`).eq("id", eventId).maybeSingle();
+  const { data, error } = await supabase.from("events").select(`${EVENT_COLS},organizations(name,brand_color,logo_url)`).eq("id", eventId).maybeSingle();
   if (error) throw error;
   return data ? mapEvent(data) : null;
 }

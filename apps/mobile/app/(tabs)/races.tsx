@@ -31,7 +31,8 @@ function cachedToRows(cached: CachedTicket[]): RegistrationRow[] {
   return cached.map((c) => ({
     id: c.rid, status: c.status, total_amount: 0, ticket_token: c.token, org_id: c.orgId,
     eventName: c.eventName, categoryLabel: c.categoryLabel, categoryDistance: null, checkoutUrl: null,
-    eventStatus: null, eventDate: null, originalDate: null, statusNote: null, payment: null,
+    eventStatus: null, eventDate: null, originalDate: null, statusNote: null,
+    orgName: c.orgName ?? null, eventHeroUrl: c.eventHeroUrl ?? null, payment: null,
   }));
 }
 
@@ -53,6 +54,7 @@ export default function MyRaces() {
       cacheMyRaces(data.map((r) => ({
         rid: r.id, token: r.ticket_token, eventName: r.eventName, categoryLabel: r.categoryLabel,
         runnerName: "", status: r.status, orgId: r.org_id,
+        orgName: r.orgName, eventHeroUrl: r.eventHeroUrl,
       })));
     }
   }, [data]);
@@ -98,7 +100,8 @@ export default function MyRaces() {
       const meta = [item.categoryLabel, item.total_amount ? `${formatPeso(item.total_amount)} due` : null].filter(Boolean).join(" · ");
       return (
         <RaceCard
-          variant="unpaid" title={item.eventName} meta={meta} distanceKm={item.categoryDistance}
+          variant="unpaid" title={item.eventName} meta={meta}
+          orgName={item.orgName} eventHeroUrl={item.eventHeroUrl}
           onPress={() => router.push(`/pay/${item.id}`)}
           onPay={() => router.push(`/pay/${item.id}`)}
           onCancel={() => { setCancelError(null); setPendingCancel(item); }}
@@ -110,14 +113,16 @@ export default function MyRaces() {
       const refunded = item.status === "refunded";
       return (
         <RaceCard
-          variant={refunded ? "refunded" : "completed"} title={item.eventName} meta={meta} distanceKm={item.categoryDistance}
+          variant={refunded ? "refunded" : "completed"} title={item.eventName} meta={meta}
+          orgName={item.orgName} eventHeroUrl={item.eventHeroUrl}
           onPress={() => router.push(`/registration/${item.id}`)}
         />
       );
     }
     return (
       <RaceCard
-        variant="registered" title={item.eventName} meta={meta} distanceKm={item.categoryDistance}
+        variant="registered" title={item.eventName} meta={meta}
+          orgName={item.orgName} eventHeroUrl={item.eventHeroUrl}
         onPress={() => router.push(`/ticket/${item.id}`)}
       />
     );
