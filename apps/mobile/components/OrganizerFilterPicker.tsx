@@ -85,7 +85,7 @@ export function OrganizerFilterPicker({ orgs, selectedIds, onChangeSelectedIds, 
           const checked = selectedIds.includes(item.id);
           return (
             <Pressable onPress={() => toggle(item.id)} accessibilityRole="button" className="flex-row items-center gap-3 py-[11px]">
-              <OrgAvatar name={item.name} color={item.brand_color} size={32} radius={9} />
+              <OrgAvatar name={item.name} color={item.brand_color} logoUrl={item.logo_url} size={32} radius={9} />
               <View className="flex-1">
                 <Text className="text-[14.5px] text-foreground">{item.name}</Text>
                 <Text className="text-[11.5px] text-muted-foreground">{item.event_count} {item.event_count === 1 ? "event" : "events"}</Text>

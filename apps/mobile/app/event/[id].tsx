@@ -59,7 +59,7 @@ export default function EventDetail() {
           <Text className="text-[26px] font-bold tracking-[-0.4px] text-foreground leading-[30px]">{event.name}</Text>
 
           <Pressable className="flex-row items-center gap-[10px] bg-muted rounded-[14px] py-[11px] px-[13px] mt-[14px]" onPress={() => router.push(`/org/${event.org_id}`)} accessibilityRole="button">
-            <OrgAvatar name={event.org_name} color={event.org_color} size={34} />
+            <OrgAvatar name={event.org_name} color={event.org_color} logoUrl={event.org_logo_url} size={34} />
             <View className="flex-1">
               <Text className="text-[13px] font-semibold text-foreground">{event.org_name}</Text>
               {(event.province_name ?? event.region) ? <Text className="text-[12px] text-muted-foreground mt-[1px]">{event.province_name ?? event.region}</Text> : null}

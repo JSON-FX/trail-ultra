@@ -1,10 +1,12 @@
-import { View, Pressable } from "react-native";
+import { useState } from "react";
+import { View, Pressable, Image, StyleSheet } from "react-native";
 import { ChevronRight, CreditCard } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { ElevationHero } from "./ElevationHero";
 
 export type RaceCardVariant = "registered" | "completed" | "refunded" | "unpaid";
 
@@ -16,31 +18,42 @@ const BADGE: Record<RaceCardVariant, { variant: "paid" | "completed" | "refunded
 };
 
 export function RaceCard({
-  variant, title, meta, distanceKm, onPress, onPay, onCancel,
+  variant, title, meta, orgName, eventHeroUrl, onPress, onPay, onCancel,
 }: {
   variant: RaceCardVariant;
   title: string;
   meta?: string | null;
-  distanceKm?: number | null;
+  orgName?: string | null;
+  eventHeroUrl?: string | null;
   onPress?: () => void;
   onPay?: () => void;
   onCancel?: () => void;
 }) {
   const badge = BADGE[variant];
-  const green = variant === "registered";
   const isUnpaid = variant === "unpaid";
   const showChevron = variant === "completed" || variant === "refunded";
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
       <Card className="mb-3 rounded-[14px] p-4 shadow-none shadow-transparent">
         <View className="flex-row items-center gap-3.5">
-          <View className={`h-[46px] w-[46px] items-center justify-center rounded-[13px] ${green ? "bg-secondary" : "bg-muted"}`}>
-            <Text className={`text-[13px] font-bold leading-[15px] ${green ? "text-primary" : "text-muted-foreground"}`}>{distanceKm ?? "—"}</Text>
-            <Text className={`text-[9px] font-bold ${green ? "text-primary" : "text-muted-foreground"}`}>KM</Text>
+          <View className="h-[54px] w-[54px] overflow-hidden rounded-[14px]">
+            {eventHeroUrl && !imgFailed ? (
+              <Image
+                testID="race-card-hero"
+                source={{ uri: eventHeroUrl }}
+                onError={() => setImgFailed(true)}
+                resizeMode="cover"
+                style={StyleSheet.absoluteFill}
+              />
+            ) : (
+              <ElevationHero height={54} />
+            )}
           </View>
           <View className="flex-1">
-            <Text className="text-[15px] font-semibold text-foreground">{title}</Text>
+            {orgName ? <Text className="text-[11px] font-medium text-muted-foreground" numberOfLines={1}>{orgName}</Text> : null}
+            <Text className="text-[15px] font-semibold text-foreground" numberOfLines={1}>{title}</Text>
             {meta ? <Text className="mt-0.5 text-xs text-muted-foreground">{meta}</Text> : null}
           </View>
           <Badge variant={badge.variant}><Text>{badge.label}</Text></Badge>
