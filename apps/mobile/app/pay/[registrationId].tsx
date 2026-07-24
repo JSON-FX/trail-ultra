@@ -1,23 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Pressable, ActivityIndicator } from "react-native";
+import { View, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import Svg, { Line } from "react-native-svg";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Check, Lock } from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { formatPeso } from "@race-pace/shared";
 import { useRegistration, verifyPayment } from "../../lib/registration";
 import { cacheTicket } from "../../lib/ticketCache";
+import { MethodLogo } from "../../components/PaymentLogos";
 import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
 const TIMEOUT_MS = 90_000;
 const RETURN_PATH = "pay-callback"; // deliberately NOT pay/return (collides with pay/[registrationId])
 const METHODS = [
-  { key: "card", label: "Card", sub: "Visa · Mastercard" },
-  { key: "gcash", label: "GCash", sub: "E-wallet" },
-  { key: "maya", label: "Maya", sub: "E-wallet" },
+  { key: "card", label: "Card" },
+  { key: "gcash", label: "GCash" },
+  { key: "maya", label: "Maya" },
 ];
 
 const PILL_BTN = "h-auto py-[15px] sm:h-auto";
@@ -32,6 +36,7 @@ export default function Pay() {
   const [timedOut, setTimedOut] = useState(false);
   const [method, setMethod] = useState("gcash");
   const [err, setErr] = useState<string | null>(null);
+  const [perfWidth, setPerfWidth] = useState(0);
   const reg = useRegistration(registrationId, { poll: awaiting });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -111,53 +116,65 @@ export default function Pay() {
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6 }}>
-      <View className="px-[22px]">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <Pressable onPress={() => router.back()} accessibilityRole="button">
           <Text className="text-[15px] font-medium text-primary">‹ Register</Text>
         </Pressable>
         <Text className="mt-[10px] text-[24px] font-bold tracking-[-0.4px] text-foreground">Payment</Text>
 
-        <View className="mt-5 rounded-[16px] bg-muted p-[18px]">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[14px] text-muted-foreground">{reg.data?.eventName ?? ""}</Text>
-            <Text className="text-[14px] font-semibold text-foreground">{reg.data?.categoryLabel ?? ""}</Text>
+        {/* Ticket-stub total — echoes the register screen */}
+        <View className="mt-5 rounded-[16px] overflow-hidden" style={{ backgroundColor: "#12281D" }}>
+          <View className="px-[15px] pt-[15px]">
+            {reg.data?.eventName ? <Text className="text-[10.5px] font-semibold uppercase" style={{ letterSpacing: 1.2, color: "#7FE0A6" }}>{reg.data.eventName}</Text> : null}
+            <Text className="text-white text-[19px] font-bold tracking-[-0.3px] mt-[3px]">{reg.data?.categoryLabel ?? ""}</Text>
           </View>
-          <View className="my-3 h-px bg-border" />
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[15px] font-semibold text-foreground">Total</Text>
-            <Text className="text-[20px] font-bold text-primary">{reg.data ? formatPeso(reg.data.total_amount) : ""}</Text>
+          <View className="relative my-[4px] h-[16px] justify-center" onLayout={(e) => setPerfWidth(e.nativeEvent.layout.width)}>
+            {perfWidth > 0 ? (
+              <Svg width={perfWidth} height={2}>
+                <Line x1={0} y1={1} x2={perfWidth} y2={1} stroke="rgba(255,255,255,0.32)" strokeWidth={1.5} strokeDasharray="5,4" strokeLinecap="round" />
+              </Svg>
+            ) : null}
+            <View className="absolute left-[-8px] top-0 h-[16px] w-[16px] rounded-full bg-background" />
+            <View className="absolute right-[-8px] top-0 h-[16px] w-[16px] rounded-full bg-background" />
+          </View>
+          <View className="flex-row items-center justify-between px-[15px] pb-[13px]">
+            <Text className="text-[10px] font-semibold uppercase" style={{ letterSpacing: 1, color: "rgba(255,255,255,0.6)" }}>Total due</Text>
+            <Text className="text-white text-[18px] font-bold" style={{ fontVariant: ["tabular-nums"] }}>{reg.data ? formatPeso(reg.data.total_amount) : ""}</Text>
           </View>
         </View>
 
-        <Text className="mb-[10px] mt-[22px] text-[11px] font-semibold tracking-[0.4px] text-muted-foreground">PAY WITH</Text>
-        <View className="flex-row gap-[10px]">
-          {METHODS.map((m) => {
-            const on = method === m.key;
-            return (
-              <Pressable
-                key={m.key}
-                className={cn(
-                  "flex-1 items-center rounded-[14px] border-[1.5px] border-border bg-background p-[13px]",
-                  on && "border-primary bg-secondary"
-                )}
-                onPress={() => setMethod(m.key)}
-                accessibilityRole="button"
-              >
-                <Text className="text-[14px] font-semibold text-foreground">{m.label}</Text>
-                <Text className="mt-[2px] text-[11px] text-muted-foreground">{m.sub}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Text className="mb-[2px] mt-[22px] text-[11px] font-semibold tracking-[0.4px] text-muted-foreground">PAY WITH</Text>
+        {METHODS.map((m) => {
+          const on = method === m.key;
+          return (
+            <Pressable
+              key={m.key}
+              onPress={() => setMethod(m.key)}
+              className={cn("mt-[9px] flex-row items-center gap-[12px] rounded-[14px] border-[1.5px] border-border bg-background px-[15px] py-[13px]", on && "border-primary bg-secondary")}
+              accessibilityRole="button"
+              accessibilityLabel={m.label}
+            >
+              <View className="flex-1 flex-row items-center gap-[8px]">
+                <MethodLogo methodKey={m.key} />
+                <Text className="text-[13.5px] font-semibold text-foreground">{m.label}</Text>
+              </View>
+              <View className={cn("h-[20px] w-[20px] items-center justify-center rounded-full border-[1.5px]", on ? "border-primary bg-primary" : "border-border")}>
+                {on ? <Icon as={Check} size={12} className="text-primary-foreground" /> : null}
+              </View>
+            </Pressable>
+          );
+        })}
         {err ? <Text className="mt-3 text-center text-destructive">{err}</Text> : null}
-      </View>
+      </ScrollView>
 
-      <View className="flex-1" />
-      <View className="px-[22px] pt-[10px]" style={{ paddingBottom: insets.bottom + 16 }}>
+      <View className="border-t border-divider bg-background px-[22px] pt-[12px]" style={{ paddingBottom: insets.bottom + 16 }}>
         <Button className={PILL_BTN} onPress={pay} accessibilityRole="button">
           <Text className={PILL_TXT}>Pay {reg.data ? formatPeso(reg.data.total_amount) : ""}</Text>
         </Button>
-        <Text className="mt-[10px] text-center text-[12px] text-muted-foreground">Secured by PayMongo</Text>
+        <View className="mt-[10px] flex-row items-center justify-center gap-[5px]">
+          <Icon as={Lock} size={12} className="text-muted-foreground" />
+          <Text className="text-[12px] text-muted-foreground">Encrypted and secured by PayMongo</Text>
+        </View>
       </View>
     </View>
   );
