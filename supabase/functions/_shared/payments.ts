@@ -1,6 +1,6 @@
 import { paymongoConfigured, pmCreateCheckoutSession, pmGetCheckoutSession, pmPaymentIdFromSession, pmCreateRefund } from "./paymongo.ts";
 
-export interface CheckoutInput { registrationId: string; amount: number; description: string; returnUrl: string }
+export interface CheckoutInput { registrationId: string; amount: number; description: string; returnUrl: string; methods?: string[]; lineItems?: { name: string; amount: number }[]; billing?: { name?: string; email?: string; phone?: string } }
 export interface CheckoutResult { checkoutUrl: string; providerRef: string }
 export interface RefundInput { providerRef: string; amount: number; reason?: string }
 export interface RefundResult { providerRefundId: string; status: "pending" | "succeeded" | "failed"; raw: unknown }
@@ -36,17 +36,14 @@ export class PayMongoProvider implements PaymentProvider {
   readonly name = "paymongo";
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
     const session = await pmCreateCheckoutSession({
-      lineItems: [{
-        name: input.description || "Race registration",
-        amount: input.amount, // already in centavos
-        currency: "PHP",
-        quantity: 1,
-      }],
-      paymentMethodTypes: ["card", "gcash", "paymaya"],
+      lineItems: (input.lineItems && input.lineItems.length ? input.lineItems : [{ name: input.description || "Race registration", amount: input.amount }])
+        .map((li) => ({ name: li.name, amount: li.amount /* centavos */, currency: "PHP", quantity: 1 })),
+      paymentMethodTypes: input.methods && input.methods.length ? input.methods : ["card", "gcash", "paymaya"],
       description: input.description,
       successUrl: withStatus(input.returnUrl, "paid"),
       cancelUrl: withStatus(input.returnUrl, "cancel"),
       metadata: { registration_id: input.registrationId },
+      billing: input.billing,
     });
     return { checkoutUrl: session.checkoutUrl, providerRef: session.id };
   }

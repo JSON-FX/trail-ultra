@@ -78,8 +78,15 @@ Deno.serve(async (req) => {
       { onConflict: "registration_id" },
     );
 
+    // Itemize the hosted checkout: entry fee + a grouped add-ons line, so PayMongo's summary
+    // shows why the total is what it is (mirrors the app's pay-screen breakdown).
+    const lineItems = [{ name: category.label, amount: category.base_price }];
+    if (addonTotal > 0) lineItems.push({ name: "Add-ons", amount: addonTotal });
+    // Prefill PayMongo's "Customer Information" with the runner's name + email (phone left to PayMongo).
+    const { data: profile } = await db.from("profiles").select("full_name,bib_name").eq("id", userId).maybeSingle();
+    const billing = { name: ((profile?.full_name ?? profile?.bib_name ?? "") as string).trim() || undefined, email: userRes.user.email || undefined };
     const checkout = await provider.createCheckout({
-      registrationId: reg.id, amount: total, description: category.label, returnUrl,
+      registrationId: reg.id, amount: total, description: category.label, returnUrl, lineItems, billing,
     });
     await db.from("payments").update({
       provider_ref: checkout.providerRef,

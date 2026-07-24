@@ -7,7 +7,7 @@ import { Check, Lock } from "lucide-react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 import { formatPeso } from "@race-pace/shared";
-import { useRegistration, verifyPayment } from "../../lib/registration";
+import { useRegistration, verifyPayment, createMethodCheckout } from "../../lib/registration";
 import { cacheTicket } from "../../lib/ticketCache";
 import { MethodLogo } from "../../components/PaymentLogos";
 import { Text } from "@/components/ui/text";
@@ -37,6 +37,7 @@ export default function Pay() {
   const [method, setMethod] = useState("gcash");
   const [err, setErr] = useState<string | null>(null);
   const [perfWidth, setPerfWidth] = useState(0);
+  const [preparing, setPreparing] = useState(false);
   const reg = useRegistration(registrationId, { poll: awaiting });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -52,10 +53,16 @@ export default function Pay() {
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   async function pay() {
-    if (!url) { setErr("No checkout link available. Go back and try again."); return; }
     setErr(null);
     const redirect = Linking.createURL(RETURN_PATH);
-    const full = url + (url.includes("?") ? "&" : "?") + "return=" + encodeURIComponent(redirect);
+    // Scope a fresh checkout to the chosen method so PayMongo opens straight to it; fall back to
+    // the all-methods session created at registration if that call fails.
+    setPreparing(true);
+    const scoped = await createMethodCheckout(registrationId, method);
+    setPreparing(false);
+    const payUrl = scoped ?? url;
+    if (!payUrl) { setErr("No checkout link available. Go back and try again."); return; }
+    const full = payUrl + (payUrl.includes("?") ? "&" : "?") + "return=" + encodeURIComponent(redirect);
     setTimedOut(false); setAwaiting(true);
     try { await WebBrowser.openAuthSessionAsync(full, redirect); } catch { /* poll drives the outcome */ }
     // Back from the hosted checkout — confirm server-side (verified with PayMongo, never the redirect).
@@ -114,6 +121,11 @@ export default function Pay() {
     );
   }
 
+  const total = reg.data?.total_amount ?? 0;
+  const entryFee = reg.data?.basePrice ?? total;
+  const addonTotal = Math.max(0, total - entryFee);
+  const inclusions = reg.data?.inclusions ?? [];
+
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6 }}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
@@ -143,6 +155,38 @@ export default function Pay() {
           </View>
         </View>
 
+        {/* Charge breakdown — why the total is what it is */}
+        <View className="mt-[14px] overflow-hidden rounded-[14px] border border-border">
+          <View className="flex-row items-center justify-between px-[14px] py-[11px]">
+            <Text className="text-[13px] text-muted-foreground">Entry fee</Text>
+            <Text className="text-[13px] font-semibold text-foreground" style={{ fontVariant: ["tabular-nums"] }}>{formatPeso(entryFee)}</Text>
+          </View>
+          {addonTotal > 0 ? (
+            <View className="flex-row items-center justify-between border-t border-border px-[14px] py-[11px]">
+              <Text className="text-[13px] text-muted-foreground">Add-ons</Text>
+              <Text className="text-[13px] font-semibold text-foreground" style={{ fontVariant: ["tabular-nums"] }}>+{formatPeso(addonTotal)}</Text>
+            </View>
+          ) : null}
+          <View className="flex-row items-center justify-between border-t border-border px-[14px] py-[11px]">
+            <Text className="text-[13px] text-muted-foreground">Booking fee</Text>
+            <Text className="text-[13px] font-semibold text-primary">Free</Text>
+          </View>
+        </View>
+
+        {inclusions.length > 0 ? (
+          <View className="mt-[18px]">
+            <Text className="mb-[10px] text-[15px] font-bold tracking-[-0.2px] text-foreground">What's included</Text>
+            {inclusions.map((item, i) => (
+              <View key={i} className="flex-row items-center gap-[9px] py-[5px]">
+                <View className="h-[18px] w-[18px] items-center justify-center rounded-full bg-secondary">
+                  <Icon as={Check} size={11} className="text-primary" />
+                </View>
+                <Text className="flex-1 text-[13.5px] text-foreground">{item}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         <Text className="mb-[2px] mt-[22px] text-[11px] font-semibold tracking-[0.4px] text-muted-foreground">PAY WITH</Text>
         {METHODS.map((m) => {
           const on = method === m.key;
@@ -168,8 +212,8 @@ export default function Pay() {
       </ScrollView>
 
       <View className="border-t border-divider bg-background px-[22px] pt-[12px]" style={{ paddingBottom: insets.bottom + 16 }}>
-        <Button className={PILL_BTN} onPress={pay} accessibilityRole="button">
-          <Text className={PILL_TXT}>Pay {reg.data ? formatPeso(reg.data.total_amount) : ""}</Text>
+        <Button className={PILL_BTN} onPress={pay} disabled={preparing} accessibilityRole="button">
+          <Text className={PILL_TXT}>{preparing ? "Opening…" : `Pay ${reg.data ? formatPeso(reg.data.total_amount) : ""}`}</Text>
         </Button>
         <View className="mt-[10px] flex-row items-center justify-center gap-[5px]">
           <Icon as={Lock} size={12} className="text-muted-foreground" />

@@ -42,6 +42,20 @@ export async function verifyPayment(registrationId: string): Promise<{ status: s
   }
 }
 
+/** Recreate the PayMongo checkout scoped to the runner's chosen method, so the hosted page opens
+ *  straight to it. Best-effort: returns null on any error, and the pay screen falls back to the
+ *  all-methods session created at registration. */
+export async function createMethodCheckout(registrationId: string, method: string): Promise<string | null> {
+  try {
+    const body = { registration_id: registrationId, method, return_url: Linking.createURL(PAY_RETURN_PATH) };
+    const { data, error } = await supabase.functions.invoke("payment-session", { body });
+    if (error) return null;
+    return (data as { checkout_url?: string })?.checkout_url ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type RegistrationPayment = {
   createdAt: string | null; method: string | null; amount: number | null;
   platformFee: number | null; netToOrg: number | null; provider: string | null;
@@ -52,12 +66,12 @@ export type RegistrationRow = {
   id: string; status: string; total_amount: number; ticket_token: string | null; org_id: string;
   eventName: string; categoryLabel: string; categoryDistance: number | null; checkoutUrl: string | null;
   eventStatus: string | null; eventDate: string | null; originalDate: string | null; statusNote: string | null;
-  orgName: string | null; eventHeroUrl: string | null;
+  orgName: string | null; eventHeroUrl: string | null; basePrice?: number | null; inclusions?: string[] | null;
   payment: RegistrationPayment | null;
 };
 
 const REG_SELECT =
-  "id,status,total_amount,ticket_token,org_id,organizations(name),events(name,status,event_date,original_date,status_note,hero_image_url),categories(label,distance_km),payments(checkout_url,created_at,method,amount,platform_fee,net_to_org,provider,provider_ref,status)";
+  "id,status,total_amount,ticket_token,org_id,organizations(name),events(name,status,event_date,original_date,status_note,hero_image_url,inclusions),categories(label,distance_km,base_price),payments(checkout_url,created_at,method,amount,platform_fee,net_to_org,provider,provider_ref,status)";
 
 function mapReg(r: any): RegistrationRow {
   const payment = Array.isArray(r.payments) ? r.payments[0] : r.payments;
@@ -66,6 +80,8 @@ function mapReg(r: any): RegistrationRow {
     eventName: r.events?.name ?? "Event", categoryLabel: r.categories?.label ?? "", categoryDistance: r.categories?.distance_km ?? null,
     orgName: r.organizations?.name ?? null,
     eventHeroUrl: r.events?.hero_image_url ?? null,
+    basePrice: r.categories?.base_price ?? null,
+    inclusions: r.events?.inclusions ?? null,
     checkoutUrl: payment?.checkout_url ?? null,
     eventStatus: r.events?.status ?? null, eventDate: r.events?.event_date ?? null,
     originalDate: r.events?.original_date ?? null, statusNote: r.events?.status_note ?? null,
